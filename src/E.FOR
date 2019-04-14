@@ -162,8 +162,8 @@ CALL SYMBOL_RUS(2.3,YL,0.777,'эквипотенциали', 14,0.)
 ! Построение распределения потенциала на оси
 !
       CALL setPEN (7)
-      CALL REGION (2.3, YL+3.9, XL, 3.8, 'AXES POTENTIAL', 14, 1)
-      CALL LIMITS (XMIN*Z0, XMAX*Z0, .0, FG*1.2)
+      CALL REGION (2.3,YL+2.9,XL,4.8,'AXES POTENTIAL DISTRIBUTION',27,1)
+      CALL LIMITS (XMIN*Z0, XMAX*Z0, .0, FG*1.4)
       CALL axes   (''C, 1, 0.0, 4, 'F', 1, FG, 5, 00)
       CALL setpen (8)
       Z2=XU(2)*Z0
