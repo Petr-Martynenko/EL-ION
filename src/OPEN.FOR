@@ -8,6 +8,7 @@ CC Программы определения ВМП, компонент магнитной индукции, создаваемых
 CC набором осесимметричных токовых катуше в точке с заданными координатами
 CC точность расчета магнитной индукции 1.E-7 TL
 CC
+!MS$OBJCOMMENT LIB: "C:\WORK\Grafor.lib"
       PROGRAM OPEN
       USE MSIMSL
       IMPLICIT REAL*8 (A-H,O-Z)
@@ -179,3 +180,17 @@ C     Close and discard file:
       INCLUDE '_BLOCK_1.FOR'
 
       INCLUDE '_BLOCK_2.FOR'
+!
+      LOGICAL(4) FUNCTION INITIALSETTINGS( )
+      use msflib
+      integer*4 i4
+      TYPE (qwinfo) qwi
+! Set window frame size.
+      qwi%x = 0
+      qwi%y = 0
+      qwi%w = 1000
+      qwi%h = 1000     ! window height
+      qwi%type = QWIN$SET
+      i4 = SetWSizeQQ( QWIN$FRAMEWINDOW, qwi )
+      INITIALSETTINGS= .true.
+      END FUNCTION INITIALSETTINGS

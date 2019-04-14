@@ -6,13 +6,7 @@ CC    11.10.89
       SUBROUTINE E
 !----------------------------------------
       IMPLICIT REAL*8 (A-H,O-Z)
-      INTERFACE
-	INTEGER*2 FUNCTION setcolor(color)
-!DEC$ ATTRIBUTES DEFAULT :: setcolor
 !DEC$ ATTRIBUTES C,ALIAS:"__setcolor" ::  setcolor
-	  INTEGER*2 color
-	END FUNCTION
-      END INTERFACE
 
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMON.FOR'
@@ -68,15 +62,16 @@ C! Определение к-т левого нижнего узла области
 C! Определение продольного и поперечного размера страницы
       XL=(XMAX-XMIN)*S
       YL=(YMAX-YMIN)*S
-      CALL setBGR (63)
-      CALL setPEN (0)
-CALL gf_setnp(800, 600)
+      CALL grinit
+      CALL gf_setnp(1250, 600)
 C! Определение ОБЛАСТИ,ПРЕДЕЛОВ,СТРАНИЦЫ,ОСЕЙ X,Y
       CALL page (XL+2.0,YL+8.0, 'PAGE GRAFOR', 11, 1)
+      CALL setBGR (63)
+      CALL setPEN (0)
 CALL page (25.6, 19.0, 'PAGE GRAFOR', 11, 1)
       CALL setPEN (7)
-      CALL region (2.3, 2.3, XL, YL, 'MEDIAN PLANE', 12, 1)
-	CALL SYMBOL (3.,0.0,0.5,'NITER='//CHRNIT, -12,0.)
+      CALL region (2.3, 1.3, XL, YL, 'MEDIAN PLANE', 12, 1)
+	CALL SYMBOL (3.,0.0,0.4,'NITER='//CHRNIT, -12,0.)
       CALL LIMITS (XMIN*Z0, XMAX*Z0, YMIN*Z0, YMAX*Z0)
       CALL axes   ('X,m', 3, 0.0, 1, 'Y,m', 3, 0.05, 1, 00)
       CALL LIMITS (XMIN, XMAX, YMIN, YMAX)
@@ -168,7 +163,7 @@ CALL SYMBOL_RUS(2.3,YL,0.777,'эквипотенциали', 14,0.)
 !
       CALL setPEN (7)
       CALL REGION (2.3, YL+3.9, XL, 3.8, 'AXES POTENTIAL', 14, 1)
-      CALL LIMITS (XMIN*Z0, XMAX*Z0, .0, FG)
+      CALL LIMITS (XMIN*Z0, XMAX*Z0, .0, FG*1.2)
       CALL axes   (''C, 1, 0.0, 4, 'F', 1, FG, 5, 00)
       CALL setpen (8)
       Z2=XU(2)*Z0
