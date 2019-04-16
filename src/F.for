@@ -152,7 +152,7 @@ C! Определение ОБЛАСТИ,ПРЕДЕЛОВ,СТРАНИЦЫ,ОСЕЙ X,Y
       YMIN=YV(0)
       XL=(XMAX-XMIN)*S
       YL=(YMAX-YMIN)*S
-      CALL gf_setnp(800, 480)
+      CALL gf_setnp(1000, 600)
       CALL page (30.0, 18.0, 'MEDIAN PLANE', 12, 1)
       call setpen (7)
 
@@ -160,7 +160,7 @@ C! Определение ОБЛАСТИ,ПРЕДЕЛОВ,СТРАНИЦЫ,ОСЕЙ X,Y
       XMIN=XMIN*Z0
       XMAX=XMAX*Z0
       CALL REGION
-     + (2.3,YL+4.7,XL,4.0,'AXES MAGNETIC FIELD DISTRIBUTION',32,1)
+     + (2.3,YL+2.9,XL,4.0,'AXES MAGNETIC FIELD DISTRIBUTION',32,1)
       CALL limits (XMIN, XMAX, BMI, BMA)
 C! call xaxis (XU(0), 0,0, (XMAX-XMIN)/5., 1, 0, 1)
 C! call Yaxis (0.0, 0,0, BUY, 2, 0, 1)
@@ -186,7 +186,7 @@ C! Определение ОБЛАСТИ,ПРЕДЕЛОВ,СТРАНИЦЫ,ОСЕЙ X,Y
       XL=(XMAX-XMIN)*S
       YL=(YMAX-YMIN)*S
 
-      CALL REGION (2.3, 2.4, XL, YL, 'IZOLIN', 6, 1)
+      CALL REGION (2.3, 1.4, XL, YL, 'IZOLIN', 6, 1)
       CALL LIMITS (XMIN, XMAX, YMIN, YMAX)
 C! Построение контура ОБЛАСТИ
       CALL MOVE(2.3, 1.0, 0)

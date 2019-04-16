@@ -60,7 +60,7 @@ CC    11.10.89
       REWIND (NK2)
       DO K=1,IZZ
 	     CALL IBCD   (K,CHRNIT)
-	     WRITE (14,*) 'Вывод траектории №'//CHRNIT 
+	     WRITE (14,*) 'Output trajectories №'//CHRNIT 
 	     WRITE (14,*) 'LINE-XY' 
 	     WRITE (14,*) 'LINEWIDTH=0.5' 
       IF (ZNAK .GT. 0.) WRITE (14,*) 'COLOR=black' 
