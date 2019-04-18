@@ -159,7 +159,7 @@ C! Определение ОБЛАСТИ,ПРЕДЕЛОВ,СТРАНИЦЫ,ОСЕЙ X,Y
 C! Построение распределения потенциала на оси
       IF (MAG) THEN 
       CALL REGION
-     + (2.3,YL+2.9,XL,4.5,'AXES MAGNETIC FIELD DISTRIBUTION',32,1)
+     + (2.3,YL+2.9,XL,4.6,'AXES MAGNETIC FIELD DISTRIBUTION',32,1)
       CALL limits (XMIN*Z0, XMAX*Z0, BMI, BMA)
 C! call xaxis (XU(0), 0,0, (XMAX-XMIN)/5., 1, 0, 1)
 C! call Yaxis (0.0, 0,0, BUY, 2, 0, 1)
