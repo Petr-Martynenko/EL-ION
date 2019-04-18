@@ -152,16 +152,15 @@ C! Определение ОБЛАСТИ,ПРЕДЕЛОВ,СТРАНИЦЫ,ОСЕЙ X,Y
       YMIN=YV(0)
       XL=(XMAX-XMIN)*S
       YL=(YMAX-YMIN)*S
-      CALL gf_setnp(1000, 600)
-      CALL page (30.0, 18.0, 'MEDIAN PLANE', 12, 1)
+      CALL gf_setnp(1200, 600)
+      CALL page (XL+2.4,YL+8.7, 'MEDIAN PLANE', 12, 1)
       call setpen (7)
 
+C! Построение распределения потенциала на оси
       IF (MAG) THEN 
-      XMIN=XMIN*Z0
-      XMAX=XMAX*Z0
       CALL REGION
-     + (2.3,YL+2.9,XL,4.0,'AXES MAGNETIC FIELD DISTRIBUTION',32,1)
-      CALL limits (XMIN, XMAX, BMI, BMA)
+     + (2.3,YL+2.9,XL,4.5,'AXES MAGNETIC FIELD DISTRIBUTION',32,1)
+      CALL limits (XMIN*Z0, XMAX*Z0, BMI, BMA)
 C! call xaxis (XU(0), 0,0, (XMAX-XMIN)/5., 1, 0, 1)
 C! call Yaxis (0.0, 0,0, BUY, 2, 0, 1)
       call axes ('X,m', 3, 0.0, 1, 'BM,TL', 5, BUY, 1, 11)
@@ -177,14 +176,6 @@ C! call Yaxis (0.0, 0,0, BUY, 2, 0, 1)
 	     CALL FATLIN(XF,YF,1)
  7    CONTINUE
       ENDIF
-
-C! Определение ОБЛАСТИ,ПРЕДЕЛОВ,СТРАНИЦЫ,ОСЕЙ X,Y
-      XMAX=XU(IZL)
-      YMAX=YV(IRL)
-      XMIN=XU(0)
-      YMIN=YV(0)
-      XL=(XMAX-XMIN)*S
-      YL=(YMAX-YMIN)*S
 
       CALL REGION (2.3, 1.4, XL, YL, 'IZOLIN', 6, 1)
       CALL LIMITS (XMIN, XMAX, YMIN, YMAX)
@@ -258,6 +249,7 @@ C *** CALCULATES EQUIPOTENTIAL LINE ***
       GOTO  81
  85   CONTINUE
  50   CONTINUE
+
       XMAX=XMAX*Z0
       YMAX=YMAX*Z0
       XMIN=XMIN*Z0
