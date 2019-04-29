@@ -175,6 +175,8 @@ C     Close and discard file:
       CLOSE (1, STATUS = 'DELETE')	
 99999 END PROGRAM OPEN
 
+      INCLUDE '_BLOCK_0.FOR'
+
       INCLUDE '_BLOCK_1.FOR'
 
       INCLUDE '_BLOCK_2.FOR'
