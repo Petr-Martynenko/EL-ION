@@ -5,7 +5,6 @@
       IMPLICIT REAL*8 (A-H,O-Z)
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMON.FOR'
-      INTEGER ind1
       DATA MS/-23/
 COM12............./COM12/BDR(NP),BDZ(NP),REX(NP),IGM(NP),MS
       DATA BDR(01),BDZ(01),IGM(01),REX(01)/ 0.0,    300.0,	 2,	0.0/
