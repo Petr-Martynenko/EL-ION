@@ -153,7 +153,7 @@ DEP_F90_G_FOR=\
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\MSDEV 6.0\My Projects 6.0\Grafor4.20\Grafor\low\grinit.f"
+SOURCE=.\src\grinit.f
 # End Source File
 # Begin Source File
 
