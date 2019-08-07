@@ -1,3 +1,2 @@
 # EL&ION
-CODE for 
-multibeam system simulation
+multibeam system simulation CODE
