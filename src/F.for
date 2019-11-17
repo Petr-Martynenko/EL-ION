@@ -72,7 +72,8 @@ C *** CALCULATES EQUIPOTENTIAL LINE ***
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMON.FOR'
 
-      REAL*8 FZ
+      REAL*4 FZ  ! - inp продольная координата , сет.ед.
+      INTEGER ND ! - inp 
       REAL*8 AO  ! угловая компонента ВМП, норм.
       REAL*8 ZETA ! продольная координата точки, сет.ед.
       REAL*8 RHO  ! поперечная координата точки, сет.ед.
@@ -154,21 +155,21 @@ C! Определение к-т левого нижнего узла области
 C! Определение продольного и поперечного размера страницы
       XL=(XMAX-XMIN)*S
       YL=(YMAX-YMIN)*S
-      CALL gf_setnp(1200, 600)
-      CALL page (XL+2.4,YL+8.7, 'MEDIAN PLANE', 12, 1)
-      CALL setBGR (63)
+      call gf_setnp(1200, 600)
+      call page (XL+2.4,YL+8.7, 'MEDIAN PLANE', 12, 1)
+      call setBGR (63)
       call setpen (7)
 C! Построение распределения потенциала на оси
       IF (MAG) THEN 
-      CALL REGION
+      call REGION
      + (2.3,YL+2.9,XL,4.6,'AXES MAGNETIC FIELD DISTRIBUTION',32,1)
-      CALL limits(XMIN*Z0, XMAX*Z0, BMI, BMA)
+      call limits(XMIN*Z0, XMAX*Z0, BMI, BMA)
 C! call xaxis (XU(0), 0,0, (XMAX-XMIN)/5., 1, 0, 1)
       call axes  ('X,m', 3, 0.0, 1, 'BM,TL', 5, BUY, 1, 11)
-      CALL LIMITS(XMIN, XMAX, YMIN, YMAX)
-      CALL setPEN(0)
-      CALL BAR   (XMIN+.5,YMIN+.4,YMAX-YMIN,XMAX-XMIN-.5,YMAX-YMIN,2,20)
-      CALL limits(XMIN*Z0, XMAX*Z0, BMI, BMA)
+      call LIMITS(XMIN, XMAX, YMIN, YMAX)
+      call setPEN(0)
+      call BAR   (XMIN+.5,YMIN+.4,YMAX-YMIN,XMAX-XMIN-.5,YMAX-YMIN,2,20)
+      call limits(XMIN*Z0, XMAX*Z0, BMI, BMA)
       call setpen(12)
       Z=XU(0)*Z0
       R=SNGL(BZA(0))*BN
@@ -184,30 +185,30 @@ C! call xaxis (XU(0), 0,0, (XMAX-XMIN)/5., 1, 0, 1)
       call Yaxis (0.0, '',0, BUY, 0, 1, 0)
       ENDIF
 
-      XMAX=XU(IZL)
+      XMAX=XU(IZL)     ! Определение к-т правого верхнего узла области
       YMAX=YV(IRL)
-      XMIN=XU(0)
+      XMIN=XU(0)       ! Определение к-т левого нижнего узла области
       YMIN=YV(0)
-      XL=(XMAX-XMIN)*S
+      XL=(XMAX-XMIN)*S ! Определение продольного и поперечного размера страницы
       YL=(YMAX-YMIN)*S
 
-      CALL REGION (2.3, 1.4, XL, YL, 'IZOLIN', 6, 1)
-      CALL LIMITS (XMIN, XMAX, YMIN, YMAX)
-C! Построение контура ОБЛАСТИ
-      CALL MOVE(2.3, 1.0, 0)
+      call REGION (2.3, 1.4, XL, YL, 'IZOLIN', 6, 1)
+      call LIMITS (XMIN, XMAX, YMIN, YMAX)
+! Построение контура ОБЛАСТИ
+      call MOVE(2.3, 1.0, 0)
       DO 20 I = 1, ABS(MS)
       IM1=I-1
       IF (I.EQ.1) IM1=ABS(MS)
       R2=BDR(I)
       Z2=BDZ(I)
-      CALL TMF (Z2,R2,XF,YF)
+      call TMF (Z2,R2,XF,YF)
       IF (I.EQ. 1) CALL MOVE(XF,YF,0)
       IF (MI.LT.0) THEN
 !
 ! Построение граничных точек контура ОБЛАСТИ
 !
-         CALL MOVE(XF,YF,0)
-         CALL MARKER(2)
+       call MOVE(XF,YF,0)
+       call MARKER(2)
       ELSE
 !
 ! Построение контура ОБЛАСТИ
@@ -217,15 +218,15 @@ C! Построение контура ОБЛАСТИ
 !
 !	определение 
 !
-	 CALL CORCR(BDZ(IM1),BDR(IM1),BDZ(I),BDR(I),XCN,YCN,REX(IM1))
+       call CORCR(BDZ(IM1),BDR(IM1),BDZ(I),BDR(I),XCN,YCN,REX(IM1))
        Z2=XCN
        R2=YCN
-	 CALL TMF (Z2,R2,XOF,YOF)
+       call TMF (Z2,R2,XOF,YOF)
 	 RF = SQRT((XF-XOF)**2+(YF-YOF)**2)
 	 IF (N .EQ. -1) RF = -RF
-	 CALL ARCIB( RF, XF, YF, 0)
+       call ARCIB( RF, XF, YF, 0)
       ELSE
-         CALL MOVE(XF,YF,1)
+       call MOVE(XF,YF,1)
       END IF
       END IF
  20   CONTINUE
@@ -233,7 +234,8 @@ C! Построение контура ОБЛАСТИ
 	DO 50 J=IZZ,1,-1
       IF (MOD(J,MZ).EQ.0 .OR. J.EQ.1) THEN
 	     REWIND (NK4)
-       Z= UX(J)
+! начальные координаты инжекции трубок тока по дуге окружности
+        Z= UX(J)
        IF(NAMCAT.EQ. 'CATOD1' )Z=0. 5*( Z+UX(J-1) )
        R= VY(J)
        IF(NAMCAT.EQ.'CATOD1')R=0.5*(R+VY(J-1))
@@ -268,10 +270,10 @@ C *** CALCULATES EQUIPOTENTIAL LINE ***
       YMAX=YMAX*Z0
       XMIN=XMIN*Z0
       YMIN=YMIN*Z0
-      CALL limits (XMIN, XMAX, YMIN, YMAX)
-      CALL setpen (7)
-      CALL axes ('X,m', 3, 0.0, 1,'Y,m', 3, 0.05, 1, 00)
-      CALL ENDPG (0)
+      call limits (XMIN, XMAX, YMIN, YMAX)
+      call setpen (7)
+      call axes ('X,m', 3, 0.0, 1,'Y,m', 3, 0.05, 1, 00)
+      call ENDPG (0)
 
       write (NOUT,Q11)
       write (NOUT,'(''AKAT(3)= внутрений радиус катушки,m'')')

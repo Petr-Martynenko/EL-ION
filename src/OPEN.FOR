@@ -138,7 +138,7 @@ CALL READL1
           CALL GRAF4WIN
         CASE ('I', 'i')
 	   WRITE (*, *)' IOAT **************************************'
-          CALL IOAT
+          CALL IOAT (.TRUE.)
         CASE ('J', 'j')
 	   WRITE (*, *)' INTGR **************************************'
 CC    интегрирование уравнений движения	  
@@ -149,6 +149,9 @@ CC    заполнение массива обьемного заряда
 CC    интегрирование уравнений движения	  
 CC    заполнение массива обьемного заряда без коррекции	  
           CALL INTGR1
+        CASE ('L', 'l')
+	   WRITE (*, *)' IOAT **************************************'
+          CALL IOAT (.FALSE.)
         CASE ('Z', 'z')
 	   GOTO 50000
         CASE DEFAULT
@@ -171,8 +174,6 @@ C     Close and discard file:
       CLOSE (UNIT=06,  STATUS='DELETE')
       CLOSE (UNIT=10,  STATUS='KEEP')
       CLOSE (UNIT=11,  STATUS='KEEP')
-77777 OPEN  (UNIT=01,  FILE=''C, ERR=99999)
-      CLOSE (1, STATUS = 'DELETE')	
 99999 END PROGRAM OPEN
 
       INCLUDE '_BLOCK_0.FOR'
