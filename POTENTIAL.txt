@@ -45,7 +45,7 @@ NITER=   1  ITER= 101 GAMA=  .025
     2.396   .017392
     2.416   .016783 
 LINE-XY
-COLOR=Gray
+COLOR=Green
 NITER=   2  ITER=  50 GAMA=  .035
     1.621   .029403
     1.641   .029902
