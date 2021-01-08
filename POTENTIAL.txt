@@ -2,7 +2,7 @@ TITLE=High perveance gun design
 XLABEL=VALUE of angle
 YLABEL=POTENTIAL
 LINE-XY
-COLOR=Red
+COLOR=black
 NITER=   1  ITER= 101 GAMA=  .025
     1.621   .030162
     1.641   .030745
