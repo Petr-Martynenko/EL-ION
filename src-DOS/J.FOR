@@ -36,7 +36,7 @@
      & T25, ''Z-SPEED   R-SPEED   l-SPEED  CHARGE'')' )
 
       IF ( MAG ) WRITE(*,'(T3,''N   Z-KOOP.	R-KOOP.'',T25,
-     &''Z-SPEED   R-SPEED   L-SPEED   F-SPEED	T-SPEED	CHARGE'')')
+     &''Z-SPEED  R-SPEED  L-SPEED   F-SPEED	T-SPEED	CHARGE'')')
 !
 !	GAMA=корректирующий множитель
 !
@@ -123,6 +123,9 @@
           WRITE(*,
      & '(T3,''RATIO OF CURRENT DENCITY FOR FG='',I7,'' (V)'')')INT4(FG)
           WRITE(*,'(8F10.3)') (UVX(I),I=1,IZZ)
+!
+!       задание плотности тока на катоде
+!
       UVMA=1.D-7
       DO 20 I=1,IZZ
       UVX(I)=0.0
@@ -155,10 +158,9 @@
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMMON.FOR'
 
-      REAL*8  A(6),Y0(4),YI(5),CAL1(3),CAL2(4),DER(4)      !
+      REAL*8  Y0(4),YI(5),CAL1(3),CAL2(4),DER(4)      !
       LOGICAL IFL
-      DATA A /6*0./
-      DATA COND3 /.3333333333333/ A /6*0./
+      DATA COND3 /.3333333333333/
       VFE=0.0
       RTE=0.0
       IFL=.FALSE.
@@ -166,15 +168,29 @@
       ZZ= XU(0) + ZSCHIF
 !    L=0--прохождение прикатодного слоя	  
  1    IF (L .EQ. 0) THEN
-	   DT=3.*DR*ZNAK/VO
+	   DT=3.*DR/VO
 	   IF (NAMCAT .EQ. 'CATOD1') CALL CATOD1(INZ,YI)
 	   IF (NAMCAT .EQ. 'CATOD2') CALL CATOD2(INZ,YI)
 	   L=L+1
 	   DO 5 J=1,4
 	   Y(J)=YI(J)
  5	   CONTINUE
-      IF ( MAG )
-     &	 PRINT 4, INZ, Y(1), Y(2), Y(3), Y(4), VO, RTE, VO, Y(5)*DT
+	   IF(MAG)THEN
+C *************
+           Z=Y(1)
+	   R=Y(2)
+	   R2=R*R
+*      REAL*8 AO  - out  ! угловая компонента ВМП, TL*м
+*      REAL*8 Z   - inp  ! продольная координата точки .м
+*      REAL*8 R   - inp  ! поперечная координата точки .м
+*      REAL*8 BZ  - out  ! продольная компонент МИ, TL
+*      REAL*8 BR  - out  ! поперечная компонент МИ, TL
+	   CALL FORMAG (AO,Z,R,BZ,BR)
+	   TETA=(R*AO-PCIMG(INZ))/R2*ZNAK
+	   RTE=R*TETA
+	   VS2=VO+RTE*RTE
+           PRINT 4, INZ, Y(1), Y(2), Y(3), Y(4), VO, RTE, VO, Y(5)*DT
+	   END IF
       IF (.NOT. MAG )
      &	 PRINT 4, INZ, Y(1), Y(2), Y(3), Y(4), VO, Y(5)*DT
       ELSE
@@ -205,26 +221,15 @@
 	   IF (IGMA .EQ. 0) GOTO 45
 	   IF(MAG)THEN
 ! *************
+           Z=YI(1)
 	   R=YI(2)
 	   R2=R*R
-	   IZT=YI(1) - XU (0) + 0.5
-	   X1=YI(1)-XU(0)-FLOAT(IZT)
-	   CALL FKMAG( IZT,A)
-	  B0=BZA( IZT )+X1*( A( 1 )+X1/2. * (A( 2 )+X1/3. *
-     +	  (A(3)+X1/4.*(A(4)+X1/5.*(A(5)+
-     +    X1/6.*A(6))))))
-	  B1=A(1)+X1*(A(2)+X1/2.*(A(3)+X1/3.*
-     +    (A(4)+X1/4.*(A(5)+X1/5.*A(6)))))
-	  B2=A(2)+X1*(A(3)+X1/2.*(A(4)+X1/3.*(A(5)+X1/4.*A(6))))
-	  B3=A(3)+X1*(A(4)+X1/2.*(A(5)+X1/3.*A(6)))
-	  B4=A(4)+X1*(A(5)+X1/2.*A(6))
-	  B5=A(5)+X1* A(6)
-	   AOL=B2-R2/24.*(B4-R2/48.*A(6))
-	   BDBL=B2-R2/16.*(B4-R2/36.*A(6))
-	   BSLOPE=B1-R2/8.*(B3-R2/24.*B5)
-	   BR=-0. 5*R*BSLOPE
-	   BZ= B0-R2/4.*BDBL
-	   AO=.5*R*(B0-R2/8.*AOL)
+*      REAL*8 AO  - out  ! угловая компонента ВМП, TL*м
+*      REAL*8 Y1  - inp  ! продольная координата точки .м
+*      REAL*8 Y2  - inp  ! поперечная координата точки .м
+*      REAL*8 BZ  - out  ! продольная компонент МИ, TL
+*      REAL*8 BR  - out  ! поперечная компонент МИ, TL
+	   CALL FORMAG (AO,Z,R,BZ,BR)
 	   TETA=(R*AO-PCIMG(INZ))/R2*ZNAK
 	   RTE=R*TETA
 	   C1=C1+RTE* BR
@@ -258,6 +263,7 @@
        Z=Y(1)+YM1* (2*I-1)
        R=Y(2)+YM2*(2*I-1)
        IF(R.LT.0.)R=-R
+! **** проверка выхода координат за границы прямоугольной области ***
        IF ( Z .GE.XU(IZL).OR. Z .LT.XU(0)
      + .OR. R .GE.YV(IRL).OR. R .LT.YV(0)) GOTO 51
        Z1=Z-INT(Z)
@@ -335,6 +341,6 @@
       IF (.NOT. MAG )
      &	 PRINT 4,INZ,ZZ,RZ,VZ,VR,VO,Y(5)*DT
       END IF
- 4     FORMAT (I3,5F10.4,3G10.4,2I4)
+ 4     FORMAT (I3,2F10.4,3F9.4,3G10.4,2I4)
 !*=== End of subroutine  INTEGR =========================================*
       END

@@ -18,8 +18,7 @@
       INCLUDE '_COMMON.FOR'
 
       REAL*8 Z, R
-      REAL*8 A(6),Y0(4),YI(5),CAL1(3),CAL2(4),DER(4)      !
-      DATA A /6*0./
+      REAL*8 Y0(4),YI(5),CAL1(3),CAL2(4),DER(4)      !
       DATA COND3 /.3333333333333/
       DATA NK2 /2/ !канал записи траекторий
       RTE=0.0
@@ -50,28 +49,7 @@
 !*REAL*8 Bx2- out   !продольная компонента МИ, норм. 
 !*REAL*8 By2- out   !поперечная компонента МИ, норм.
     
-C *** CALL ForMag ( PCI, Z, R, Bx2, By2) 
-	     IZT=INT(Z+0.5)
-	    X1=Z-XU(0)-FLOAT(IZT)
-!*** calculate finite difenition ***
-!*  INTEGER IZ   - inp  ! индекс ближайшего сет .узла 
-!*  REAL*8 A(6)   - out  ! значение производных МИ, норм.
-             CALL FKMAG(IZT,A)
-	  B0=BZA( IZT )+X1*( A( 1 )+X1/2. * (A( 2 )+X1/3. *
-     +	  (A(3)+X1/4.*(A(4)+X1/5.*(A(5)+
-     +    X1/6.*A(6))))))
-	  B1=A(1)+X1*(A(2)+X1/2.*(A(3)+X1/3.*
-     +    (A(4)+X1/4.*(A(5)+X1/5.*A(6)))))
-	  B2=A(2)+X1*(A(3)+X1/2.*(A(4)+X1/3.*(A(5)+X1/4.*A(6))))
-	  B3=A(3)+X1*(A(4)+X1/2.*(A(5)+X1/3.*A(6)))
-	  B4=A(4)+X1*(A(5)+X1/2.*A(6))
-	  B5=A(5)+X1* A(6)
-	   AOL=B2-R2/24.*(B4-R2/48.*A(6))
-	   BDBL=B2-R2/16.*(B4-R2/36.*A(6))
-	   BSLOPE=B1-R2/8.*(B3-R2/24.*B5)
-	   BR=-0. 5*R*BSLOPE
-	   BZ= B0-R2/4.*BDBL
-	   AO=.5*R*(B0-R2/8.*AOL)
+	   CALL FORMAG (AO,Z,R,BZ,BR)
 	   TETA=(R*AO-PCIMG(INZ))/R2*ZNAK
 	     RTE=Y(2)*TETA
 	         VS2=VO*VO+RTE*RTE
@@ -110,26 +88,15 @@ C *** CALL ForMag ( PCI, Z, R, Bx2, By2)
 	   C2=C2*0.5
 	   IF(MAG)THEN
 ! *************
+           Z=YI(1)
 	   R=YI(2)
 	   R2=R*R
-	   IZT=YI(1) - XU (0) + 0.5
-	   X1=YI(1)-XU(0)-FLOAT(IZT)
-	   CALL FKMAG( IZT,A)
-	  B0=BZA( IZT )+X1*( A( 1 )+X1/2. * (A( 2 )+X1/3. *
-     +	  (A(3)+X1/4.*(A(4)+X1/5.*(A(5)+
-     +    X1/6.*A(6))))))
-	  B1=A(1)+X1*(A(2)+X1/2.*(A(3)+X1/3.*
-     +    (A(4)+X1/4.*(A(5)+X1/5.*A(6)))))
-	  B2=A(2)+X1*(A(3)+X1/2.*(A(4)+X1/3.*(A(5)+X1/4.*A(6))))
-	  B3=A(3)+X1*(A(4)+X1/2.*(A(5)+X1/3.*A(6)))
-	  B4=A(4)+X1*(A(5)+X1/2.*A(6))
-	  B5=A(5)+X1* A(6)
-	   AOL=B2-R2/24.*(B4-R2/48.*A(6))
-	   BDBL=B2-R2/16.*(B4-R2/36.*A(6))
-	   BSLOPE=B1-R2/8.*(B3-R2/24.*B5)
-	   BR=-0. 5*R*BSLOPE
-	   BZ= B0-R2/4.*BDBL
-	   AO=.5*R*(B0-R2/8.*AOL)
+*      REAL*8 AO  - out  ! угловая компонента ВМП, TL*м
+*      REAL*8 Z   - inp  ! продольная координата точки .м
+*      REAL*8 R   - inp  ! поперечная координата точки .м
+*      REAL*8 BZ  - out  ! продольная компонент МИ, TL
+*      REAL*8 BR  - out  ! поперечная компонент МИ, TL
+	   CALL FORMAG (AO,Z,R,BZ,BR)
 	   TETA=(R*AO-PCIMG(INZ))/R2*ZNAK
 	   RTE=R*TETA
 	   C1=C1+RTE* BR

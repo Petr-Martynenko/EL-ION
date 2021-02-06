@@ -1,4 +1,9 @@
-C     Main common blocks
+!=== 89GUN common blocks=======================================*
+!$_ECOM
+      INTEGER*4 EQST ! количество делений начального шага эквипотенциали
+      INTEGER*4 EQLN ! макс.количество итераций уточнения координат
+      REAL FF  
+      COMMON/ECOM/FF,DELT,EQUIPR,EQLN,EQST
 COM01............./COM01/IPO(NS)
       INTEGER      IPO
       COMMON/COM01/IPO(NS)
@@ -60,7 +65,7 @@ COM14............./COM14/MI, M4, NAME, S, C(NO)
       CHARACTER*6 NAME
       REAL*8         S     !масштаб рисунка, см/сет.ед.
       REAL*8         C     !
-      COMMON/COM14/MI, M4, NAME, S, C(10)
+      COMMON/COM14/MI, M4, NAME, S, C(NO)
 COM15............./COM15/IGMA                 
       INTEGER      IGMA
       COMMON/COM15/IGMA

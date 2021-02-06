@@ -21,10 +21,12 @@ C     Main program variables
       CHARACTER*6 NAMEA
 
       CALL clrscr(0)
-      OPEN (UNIT=1,
+      OPEN (UNIT=1,  !канал записи массива потенциала
      +FILE='F1',STATUS='UNKNOWN',ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
-      OPEN (UNIT=2,
+      OPEN (UNIT=2,  !канал записи траекторий трубок тока
      +FILE='F2',STATUS='UNKNOWN',ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
+      OPEN (UNIT=3,  !канал записи массива поля объемного заряда
+     +FILE='F3',STATUS='UNKNOWN',ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
       OPEN (UNIT=4,
      +FILE='F4',STATUS='UNKNOWN',ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
       OPEN (UNIT=5,
@@ -33,6 +35,7 @@ C     Main program variables
      +FILE='F6',STATUS='UNKNOWN',ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
       IRL1=IRL+1
       IZL1=IZL+1                                         
+      WRITE (*,*)'Работает программа OPEN89.FOR'
       WRITE (*,*)	'IDIM=', IZL1*IRL1
       IF( IZL1*IRL1 .GT. IDIM ) GO TO 40
        MTM=MT
@@ -110,11 +113,11 @@ C	CALL POTLST
      &'Работает программа MAGFD **************************************'
 	CALL MAGFD
 	CALL MAGCAT
-	CALL GRAFM2
+CALL GRAFM2
       CASE ('I', 'i')
 	   WRITE (*, *)
      &'Работает программа REDZAP**************************************'  
-! вывод массива объемного заряда	  mtra?.TXT
+! вывод массива объемного заряда	  CHARGE?.TXT
         call IOAT (.TRUE.)
 !      call REDZAP 
       CASE ('J', 'j')
@@ -134,11 +137,13 @@ CC    заполнение массива обьемного заряда
       END SELECT
       END DO  
  30   CONTINUE
+         IF(MAG)call GRAF4WIN
       CLOSE (UNIT=1,STATUS='KEEP')
       CLOSE (UNIT=2,STATUS='DELETE')
       CLOSE (UNIT=4,STATUS='DELETE')
       CLOSE (UNIT=5,STATUS='DELETE')
       CLOSE (UNIT=6,STATUS='DELETE')
+         IF (MAG) close (UNIT=12,STATUS='DELETE')
       STOP  
  40   STOP 40
  90   STOP 90

@@ -107,18 +107,18 @@ C!      REAL*8 By2  !поперечная компонента МИ,норм.
        R= V(J)
        IF(NAMCAT.EQ. 'CATOD1' )R=0.5*(R+V(J-1))
 *
-*REAL*8 Z - inp    !продольная к-та точки,норм.
-*REAL*8 R - inp    !поперечная к-та точки,норм.
-*REAL*8 PCI- out   !угловая компонента ВМП,норм. 
-*REAL*8 Bx2- out   !продольная компонента МИ, норм. 
-*REAL*8 By2- out   !поперечная компонента МИ, норм.
+*      REAL*8 PCI - out  ! угловая компонента ВМП, норм.
+*      REAL*8 Z   - inp  ! продольная координата точки .сет.ед.
+*      REAL*8 R   - inp  ! поперечная координата точки .сет.ед.
+*      REAL*8 BZ  - out  ! продольная компонент МИ,норм.
+*      REAL*8 BR  - out  ! поперечная компонент МИ,норм.
     
 	     CALL  FORMAG (PCI,Z,R,BZ,BR)
        PCIMG(J)=       PCI
  20    CONTINUE
 C! *** PRINT ***     значение ВМП на катоде ***
       IF ( PrintFile ) THEN
-      WRITE (9, '('' ЗНАЧЕНИЕ ВМП НА КАТОДЕ,Vb/m'')')
+      WRITE (9, '('' ЗНАЧЕНИЕ ВМП НА КАТОДЕ,Wb/m'')')
       WRITE (9, '(5E14.7,2H ;))')(PCIMG(J)*Z0*BN,J= 1, IZZ)
       END IF
 C! ***********************************************
@@ -133,139 +133,145 @@ C! ***********************************************
 
       END !MAGCAT
 !----------------------------------------
-      SUBROUTINE GRAFM2
-!----------------------------------------
 !
+! Program GRA4WIN.FOR строит изолинии магнитного поля
+!
+      INCLUDE  'FGRAPH.FI'
+      SUBROUTINE GRAF4WIN
       IMPLICIT REAL*8 (A-H,O-Z)
+      INCLUDE  'FGRAPH.FD'
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMMON.FOR'
 	  
-      INTEGER*4 EQLN,EQST
-      COMMON/ECOM/FF,DELT,EQUIPR,EQLN,EQST
-
-C     Main program variables
-	  
-      REAL XMAX,YMAX,XMIN,YMIN,XL,YL
-      REAL BMA,BMI,BUY
-      REAL Z,R,XF,YF,XOF,YOF
+      REAL*8 X1,Y1,X2,Y2,X
+      REAL*8 XMAX,YMAX,XMIN,YMIN,XL,YL
+      INTEGER*2      i, status
+      INTEGER*4      oldcolor
+      RECORD /wxycoord/ wxy
+      RECORD / videoconfig / vc
+      LOGICAL*2   finvert / .TRUE. /
       DATA NK4 /4/ !канал записи эквипотенциали
+      DATA NK2 /2/
 
       IF (MI .EQ. 0) RETURN
-      IF (MI .EQ. 0) THEN 
-	     BMA=SNGL(BZA(IZMAX))*BN
-	     BMI=0.0
+!
+!     Find graphics mode.
+!
+      IF( setvideomode( $MAXRESMODE ) .EQ. 0 ) 
+     &    STOP 'Error:  cannot set graphics mode'
+      CALL getvideoconfig( vc )
+      CALL SETTEXTWINDOW( INT2(1), INT2(2), INT2(40), INT2(40))
+
+      WRITE (9, *)
+     &'Работает программа GRAF4WIN ************************************'
+      WRITE (9,'('' mastab'',E10.3)')S
+      IF (MAG) THEN 
+	     BMA=BZA(IZMAX)
+	     BMI=BZA(IZMAX)
+	     DO J=-6,IZMAX
+           IF (BMI .GT. BZA(J))BMI=BZA(J)
+      END DO
+	     DO J=-6,IZMAX
+           IF (BMA .LT. BZA(J))BMA=BZA(J)
+      END DO
+	     BMA=BMA*BN
+	     BMI=BMI*BN
 	     BUY=(BMA-BMI)/2.
 	     WRITE (9, *) ' BMI=',BMI,' TL       BMA=',BMA,' TL'
       ENDIF
-!----------------------------------------------
-      CALL GRINIT
-      call setmod(1,3)
-C! Определение ПРЕДЕЛОВ ОБЛАСТИ
-      call page (25.6, 17.5, 'PAGE GRAFOR', 11, 1)
-      call setpen (7)
-      XMAX=XU(IZL)
-      YMAX=YV(IRL)
-      XMIN=XU(0)
-      YMIN=YV(0)
-C!     AXES MAGNETIC FIELD DISTRIBUTION
+! Определение ПРЕДЕЛОВ ОБЛАСТИ
 
-      IF (MAG) THEN 
-	     BMA=SNGL(BZA(IZMAX))
-	     BMI=0.0
-      XMIN=FLOAT(XU(0))*Z0
-      XMAX=FLOAT(XU(IZL))*Z0
-C! Определение ПРЕДЕЛОВ СТРАНИЦЫ
-      call region (2.3, 20.0, 2.0, 15.0, 'PAGE', 4, 1)
-      call limits (XMIN, XMAX, BMI, BMA)
-C! Построение ОСЕЙ X,Y
-      call setpen (3)
-      call xaxis (XU(0), 0,0, (XMAX-XMIN)/5., 1, 0, 1)
-      call Yaxis (0.0, 0,0, BUY, 2, 0, 1)
-      call setpen (5)
-      Z=XU(0)*Z0
-      R=SNGL(BZA(0))*BN
-      call tmf (Z,R,XF,YF)
-      call move(XF,YF,0)
-      DO I=1,IZL
-	     Z=XU(I)*Z0
-	     R=SNGL(BZA(I))*BN
-	     call tmf (Z,R,XF,YF)
-	     call move(XF,YF,1)
-      END DO
-C! Построение ОСЕЙ X,Y
+      XMAX=FLOAT(IZL)
+      YMAX=FLOAT(IRL)
+      XMIN=0.0
+      YMIN=0.0
+      XL=XMAX*S
+      YL=YMAX*S
+! Определение ОБЛАСТИ
+
+      status = SETWINDOW( finvert , XMIN,YMIN, XMAX,YMAX)
+
+! Построение ОСЕЙ X,Y
+
+      oldcolor = 3
+      status = SETCOLOR( oldcolor ) ! full green for axes
+!
+!	    Draw vertical and horizontal lines. Vertical line style
+!	    is anything other than horizontal style. Since lines
+!	    are overdrawn with several line styles, this has the
+!	    effect of combining colors and styles.
+!
+!	    status = #F00F ! X * 256.0
+CALL setlinestyle( status)  
       DO i = 0, IZL
-	     Z=XU(I)*Z0
-	     call tmf (Z, BMI,XF,YF)
-	     call move(XF,YF,0)
-	     call tmf (Z, BMA,XF,YF)
-	     call move(XF,YF,1)
+         x=FLOAT(i)
+         CALL MOVETO_W( x, YMIN, wxy )
+         status = LINETO_W( x, YMAX )
       END DO
-      DO 7 I=1,IZL
-	     Z=XU(I)*Z0
-	     R=SNGL(BZA(I))*BN
-	     call tmf (Z,R,XF,YF)
-	     CALL MOVE(XF,YF,1)
- 7    CONTINUE
-!----------------------------------------
-      ENDIF
+      DO i = 0, IRL
+         x=FLOAT(i)
+         CALL MOVETO_W( XMIN, x, wxy )
+         status   = LINETO_W(  XMAX, x )
+      END DO
 
-C! Определение ПРЕДЕЛОВ
-      XMAX=FLOAT(XU(IZL))
-      YMAX=FLOAT(YV(IRL))
-      XMIN=FLOAT(XU(0))
-      YMIN=FLOAT(YV(0))
-      XL=(XMAX-XMIN)*S
-      YL=(YMAX-YMIN)*S
-      call page (25.6, 17.5, 'PAGE GRAFOR', 11, 1)
-      call region (2.3, 1.0, XL, YL, 'GRAF', 4, 1)
-      call limits (XMIN, XMAX, YMIN, YMAX)
-C! Построение контура ОБЛАСТИ
-      CALL MOVE(2.3, 1.0, 0)
+! Построение контура ОБЛАСТИ
+
+      status = SETCOLOR( $MAGENTA )
       IO=0
-      DO 20 I = 1, ABS(MS)
+      DO I = 1, ABS(MS)
       I1=I-1
       IF (I.EQ.1) I1=ABS(MS)
-	  R1=BDR(I1)
-       Z1=BDZ(I1)
-       N=IEX(I1)
-       R=BDR(I)
-       Z=BDZ(I)
-       CALL TMF (Z,R,XF,YF)
-       IF (N.NE.0) THEN
-         IO=IO+1
-         IF (I1.EQ.NUMB) THEN
-         DO 10 J=1,IZZ
-           R=V(J)
-           Z=U(J)
-	     CALL TMF (Z,R,XF,YF)
-           R=BDR(I)
-           Z=BDZ(I)
-	     CALL MOVE(XF,YF,1)
- 10        CONTINUE
-         ELSE
-           R=YOK(IO)
-           Z=XOK(IO)
-	     CALL tmf (Z,R,XOF,YOF)
-           R=BDR(I)
-           Z=BDZ(I)
-	     RF = SQRT((XF-XOF)**2+(YF-YOF)**2)
-	     IF (N .EQ. -1) RF = -RF
-	     CALL ARCIB( RF, XF, YF, 0)
-         END IF
+      R1=BDR(I1)
+      Z1=BDZ(I1)
+      N=IEX(I1)
+      R2=BDR(I)
+      Z2=BDZ(I)
+      IF (I.EQ. 1) CALL MOVETO_W( Z2, R2, wxy )
+      IF (MI.LT.0) THEN
+! Построение граничных точек контура ОБЛАСТИ
+	     X1=Z1+S
+	     Y1=R1+S
+	     X2=Z1-S
+	     Y2=R1-S
+	     status = ELLIPSE_W( $GFILLINTERIOR, X1, Y1, X2, Y2)
+!	    Returns:  a nonzero value if the ellipse is drawn successfully,
+!	    or 0 if not.
+	   IF(status.EQ.0)STOP'Error:the ellipse is drawn successfully'  
       ELSE
-         CALL MOVE(XF,YF,1)
+! Построение контура ОБЛАСТИ
+        IF (N .NE. 0) THEN 
+         IO=IO+1
+!
+!	определение координат цетра окружности X0,Y0
+!
+        IF(N .EQ. 1)CALL CORCR(Z1,R1,Z2,R2,X0,Y0, ROK(IO))
+        IF(N .EQ.-1)CALL CORCR(Z1,R1,Z2,R2,X0,Y0,-ROK(IO))
+         X1=X0+ROK(IO)
+         Y1=Y0+ROK(IO)
+         X2=X0-ROK(IO)
+         Y2=Y0-ROK(IO)
+        IF(N .EQ.-1)status = ARC_W( X1, Y1, X2, Y2, Z2, R2, Z1, R1 )
+        IF(N .EQ. 1)status = ARC_W( X1, Y1, X2, Y2, Z1, R1, Z2, R2 )
+         CALL MOVETO_W( Z2, R2, wxy )
+        ELSE
+         status = LINETO_W( Z2, R2)
+        END IF
       END IF
- 20   CONTINUE
+      END DO
 
-      NUMB=1
+!
+! Построение  эквипотенциалей
+!
+      IF (ABS(MI) .EQ. 2) GOTO 100
+      NUMB=0
       EQLN=3  ! максим.количество итераций уточнения координат
       EQST=3  ! количество делений начального шага эквипотенциали
       OPEN (UNIT=4,
      &FILE='F4',STATUS='UNKNOWN',ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
-	DO 50 J=IZZ,1,-1
-! Построение эквипотенциали, может состоять из нескольких частей
+      DO 50 J=IZZ,1,-1
+      NUMB=NUMB+1
 	     REWIND (NK4)
-      IF (MOD(J,M4).EQ.0 .OR. J.EQ.1) THEN
+             IF (NUMB.LE.NO.AND.(MOD(J,M4).EQ.0 .OR. J.EQ.1)) THEN
 	     Z=U(J)
 	     IF (NAMCAT .EQ. 'CATOD1') Z=0.5*(Z+U(J-1))
 	     R=V(J)
@@ -275,52 +281,73 @@ C! Построение контура ОБЛАСТИ
 C! *** CALCULATES EQUIPOTENTIAL LINE ***
 C!*  REAL*4 Z - inp  ! продольная координата точки, норм.
 C!*  INTEGER ND - inp  ! 
-	     CALL EQUIPM(Z,1)
+	     CALL EQUIPM(FLOAT(Z),1)
 !
-! Считывание массива  эквипотенциалей
+! Считывание эквипотенциали, может состоять из нескольких частей
 !
       REWIND (NK4)
  81   READ (NK4, END=85) FF,MR,(PX(I),PY(I), I=1,MR)
-      WRITE (9, *)' FF=',FF,' Wb     ',MR,' points  LINE=',J
+	     FF=2*PI*FF*BN*Z0*Z0
+      WRITE (9, *)' FF=',REAL(FF),' Wb     ',MR,'  points FOR LINE№=',J
 
-      DO 82 I=1,IZZ
-       IF ( FF .EQ. PCIMG(I)) NUMB=I
- 82   CONTINUE
-	     call setpen (NUMB)
-	     Z=PX(1)
-	     R=PY(1)
-	     call tmf (Z,R,XF,YF)
-	     call move(XF,YF,0)
+!      DO 82 I=1,IZZ
+!       IF ( FF .EQ. PCIMG(I)) NUMB=I
+! 82   CONTINUE
+      oldcolor = NUMB
+      status = SETCOLOR( oldcolor)
+	     X1=PX(1)
+	     Y1=PY(1)
+             CALL MOVETO_W( X1,Y1, wxy )
       DO 83 I=2,MR
-	     Z=PX(I)
-	     R=PY(I)
-	     call tmf (Z,R,XF,YF)
-	     call move(XF,YF,1)
+	     X1=PX(I)
+	     Y1=PY(I)
+             status = LINETO_W(X1,Y1)
  83   CONTINUE
       GOTO  81
       END IF
  85   CONTINUE
  50   CONTINUE
+!
+! Построение траекторий частиц
+!
+      IF (ABS(MI) .EQ. 2) GO TO 100
+      NUMB=0
+!
+! Считывание массива траекторий частиц
+!
+      REWIND (NK2)
+      DO 70 I=1,IZZ
+	   IF (MOD(I,M4).EQ.0 .OR. I.EQ.1) THEN
+	     READ (NK2, END=71) MTM,(PX(J),PY(J),J=1,MTM)
+	     IF (MTM.GT.1) THEN
+      NUMB=NUMB+1
+      oldcolor = NUMB
+      status = SETCOLOR( oldcolor)
+	     Z1=PX(1)
+	     R1=PY(1)
+	     X1=Z1+S
+	     Y1=R1+S
+	     X2=Z1-S
+	     Y2=R1-S
+	     status = ELLIPSE_W( $GFILLINTERIOR, X1, Y1, X2, Y2)
+!	    Returns:  a nonzero value if the ellipse is drawn successfully,
+!	    or 0 if not.
+	     IF(status.EQ.0) STOP 'Error:  cannot set graphics mode'
 
-C! Определение масштаба рисунка
-      XMAX=XMAX*Z0
-      YMAX=YMAX*Z0
-      XMIN=XMIN*Z0
-      YMIN=YMIN*Z0
-      call limits (XMIN, XMAX, YMIN, YMAX)
-C! Построение ОСЕЙ X,Y
-      call setpen (3)
-      call axes (' ', 0, 0.0, 0, ' ', 0, 0.0, 0, 00)
-C! Построение контура ОБЛАСТИ
-      call setpen (5)
-      CALL ENDPG(''C)
-
-      WRITE (9,' (/100(1H*))')
-      WRITE (9,'('' MEANS OF FLUX LINES AT CATHOD,[VB]''
-     + /(6G12.3))')C
+             CALL MOVETO_W( Z1, R1, wxy )
+             DO j=2,MTM
+		Z1=PX(j)
+		R1=PY(j)
+                status = LINETO_W( Z1, R1)
+             END DO
+             END IF
+	   END IF
+ 70   CONTINUE
+ 71   CONTINUE
+ 100  status = RECTANGLE_W( $GBORDER, XMIN,YMIN, XMAX,YMAX)
       PAUSE
+      END !GRAF4WIN
 
-      END !GRAFM2
 !----------------------------------------
       SUBROUTINE DSPROM( IEQQ, EQB, AO, RHO, ZETA, C1, C2, *)
 C *** INCREMENTS EQUIPOTENTIAL LINE ***
@@ -335,11 +362,7 @@ C *** INCREMENTS EQUIPOTENTIAL LINE ***
 C!    EQB = .TRUE.--определено
 C!    EQB=0--
       LOGICAL EQB
-	  
-      INTEGER*4 EQLN,EQST
-      COMMON/ECOM/FF,DELT,EQUIPR,EQLN,EQST
 
-	  
       EQB = .TRUE.
       DS = 1.0
 C! *** обнуление счетчика числа итераций ***
@@ -358,7 +381,7 @@ C!*      REAL*8 BZ  - out  ! продольная компонент МИ,норм.
 C!*      REAL*8 BR  - out  ! поперечная компонент МИ,норм.
       CALL  FORMAG (AO,ZETA,RHO,C1,C2)
       DS = C1*C1+C2*C2
-      IF (DS .LT. 0.0001) DS = 1.0
+      IF (DS .LT. 1.E-6) DS = 1.0
       DELTA = FF/RHO-AO
 !C *** проверка приближения значения функции к заданному ***
       IF (DABS(DELTA) .LE. 0.0001) RETURN
@@ -386,19 +409,14 @@ C!----------------------------------------
       INCLUDE '_COMMON.FOR'
       REAL*4 FZ
 
-C!     Main common blocks
-
-      INTEGER*4 EQLN,EQST
-      COMMON/ECOM/FF,DELT,EQUIPR,EQLN,EQST
-
       ND = 1
 C! *** SS DETERMINES SIGN (I.E., DIRECTION) OF EQUIPOTENTIAL LINE ***
       DO 50 LLL=1,2
        SS = 1.0
 	   IF (LLL .EQ. 2) SS = -1.0
        DELT = 1./EQST
-	   RHO=EQUIPR
-	   ZETA=FZ
+       RHO=EQUIPR  !начальная поперечная координата EQUIPOTENTIAL LINE, сет.ед.
+       ZETA=FZ	   !начальная продольная координата EQUIPOTENTIAL LINE, сет.ед.
 *      REAL*8 AO  - out  ! угловая компонента ВМП, норм.
 *      REAL*8 ZETA- inp  ! продольная координата точки .сет.ед.
 *      REAL*8 RHO - inp  ! поперечная координата точки .сет.ед.
@@ -412,7 +430,7 @@ C! *** SS DETERMINES SIGN (I.E., DIRECTION) OF EQUIPOTENTIAL LINE ***
        RPROB=RHO +BR*DELT1*SS
        ZPROB=ZETA+BZ*DELT1*SS
 C ***********************************************
-      IF ( RPROB .GE. YV(IRL).OR. ZPROB .LT. XU(0)
+      IF ( RPROB .GE. YV(IRL).OR. ZPROB .LE. XU(0)
      + .OR. ZPROB .GE. XU(IZL)) GOTO 50
 C ***********************************************
        CALL  LISTM (SS,RHO,ZETA)
@@ -479,19 +497,19 @@ C! переход в систему координат,связанную с центром соленоида
 	      ZML=Z-DKAT(ind3)
 *  число разбиений
       NMBDIV=1 
-      BZOLD=0.0  
-      BROLD=0.0 
+      BZOLD=0.D0  
+      BROLD=0.D0 
  2    NMBDIV=NMBDIV * 2 
 *  п-ма взятия 3-х двукратных интегралов по квадратурным
 *  ф-лам Гаусса второго порядка
-      SUM0=0.0 
-      SUM1=0.0  
-      SUM2=0.0
+      SUM0=0.D0 
+      SUM1=0.D0  
+      SUM2=0.D0
 *  число разбиений по каждому пределу интеграла
       NMBTWO=NMBDIV  
       NMBONE= (R2-R1) / (R2+R1) * 2 * NMBDIV / PI
 	IF (NMBONE .LE. 1) NMBONE= 2
-      MINTWO=0.0  
+      MINTWO=0.D0  
 	STEPON= (R2-R1) / NMBONE
 	STEPTW= (PI-0.) / NMBTWO
 *  проход всех интегралов по PHI
@@ -579,15 +597,12 @@ CC    CHIP=0--вычисление подинтегрального выражения для угловой компоненты ВМП
 !----------------------------------------
       SUBROUTINE LISTM(SS,RHO,ZETA)
 ! *** LISTS AND DRAWS EQUIPOTENTIAL LINE ***
+*  REAL*8 RHO   - inp  ! поперечная координата точки .сет.ед.
+*  REAL*8 ZETA  - inp  ! продольная координата точки .сет.ед.
 !----------------------------------------
       IMPLICIT REAL*8 (A-H,O-Z)
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMMON.FOR'
-
-C!     Main common blocks
-
-      INTEGER*4 EQLN,EQST
-      COMMON/ECOM/FF,DELT,EQUIPR,EQLN,EQST
 
        J=1
        ZSTART=ZETA
