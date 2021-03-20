@@ -66,7 +66,7 @@
 	 TNG=(R2-R1)/(Z2-Z1)
 	 IZS=Z1+0.9999
 	     IZF=Z2+0.4999
-	     IF(IZF.GT.IZL1-1)IZF=IZL1-1
+	     IF(IZF.GT.IZLIM1-1)IZF=IZLIM1-1
 !проверка первой гр.точки сегмента контура на совпадение с последней
       IF(NK.GT.0)THEN
         IF(IZS.EQ.IZ(NK))THEN
@@ -111,7 +111,7 @@
 ! --- II---
 	 TNG=(Z2-Z1)/(R2-R1)
 	       IRS=R1+0.99999
-      IF(IRS.GT.IRL1-1)IRS=IRL1-1
+      IF(IRS.GT.IRLIM1-1)IRS=IRLIM1-1
       IRF=R2
       IF (FLOAT(IRF).EQ.R2.AND.N.GT.0.AND.IGM(I1).LT.0) IRF=IRF-1
 !проверка первой гр.точки сегмента контура на совпадение с последней
@@ -162,7 +162,7 @@
       TNG=(R2-R1)/(Z2-Z1)
       IZS=Z1
       IZF=Z2+0.9999
-      IF(IZF.GT.IZL1-1)IZF=IZL1-1
+      IF(IZF.GT.IZLIM1-1)IZF=IZLIM1-1
 !проверка первой гр.точки сегмента контура на совпадение с последней
       IF(NK.GT.0)THEN
         IF(IZS.EQ.IZ(NK))THEN
@@ -274,9 +274,10 @@
 !
 !	определение координат цетра окружности ZCR, RCR
 !
-CALL CORCR(Z1,R1,Z2,R2,XOK(IOK),YOK(IOK),ROK(IOK))
-	  CC(1)=XOK(IOK)
-	  CC(2)=YOK(IOK)
+         IF(IEX(I).EQ. 1)CALL CORCR(Z1, R1, Z2, R2,X0,Y0, ROK(IOK))
+         IF(IEX(I).EQ.-1)CALL CORCR(Z1, R1, Z2, R2,X0,Y0,-ROK(IOK))
+	  CC(1)=X0     !XOK(IOK)
+	  CC(2)=Y0     !YOK(IOK)
 	  CC(3)=ROK(IOK)
 !
 ! определение углов наклона радиуса в начальной
@@ -323,7 +324,7 @@ CALL CORCR(Z1,R1,Z2,R2,XOK(IOK),YOK(IOK),ROK(IOK))
        IZT=ZT+NPS(NTK+2)
        IRT=RT+NPS(NTK)
        IF (IRT .LT. 0) GOTO 535
-       IF (IRT .GT. IRL1-1) GOTO 535
+       IF (IRT .GT. IRLIM1-1) GOTO 535
        IF (IZT .EQ. IZ(NK-1) .AND. IRT .EQ.IR(NK-1)) GOTO 535
 	   P1(1)=DFLOAT(IZT)
 	   P1(2)=DFLOAT(IRT)
@@ -502,12 +503,12 @@ CALL CORCR(Z1,R1,Z2,R2,XOK(IOK),YOK(IOK),ROK(IOK))
 !    IFD() - out
 !    IZ() - inp
 !    IR() - inp
-!    IZL1, IRL1, NK - inp
+!    IZLIM1, IRLIM1, NK - inp
 !
 ! Program BITA	организует
 !
 !
-         CALL BITA( IFD, IZ, IR, IZL1, IRL1, NK)
+         CALL BITA( IFD, IZ, IR, IZLIM1, IRLIM1, NK)
       DO I = 1,NK
          IR(I)=IR(I)-1
          IZ(I)=IZ(I)-1
@@ -523,11 +524,11 @@ CALL CORCR(Z1,R1,Z2,R2,XOK(IOK),YOK(IOK),ROK(IOK))
       ASTER='*'
 	  OneTen='0123456789'
 ! ***** 
-      ISETS=1+(IZL1-1)/120
-      ISET1=IZL1/10
+      ISETS=1+(IZLIM1-1)/120
+      ISET1=IZLIM1/10
       DO 130 I=1,ISETS
       LB=120*I-120
-	  UB=MIN0(LB+119,IZL1-1)
+	  UB=MIN0(LB+119,IZLIM1-1)
 	  NB=UB-LB+1
 	  WRITE (*,'(''****MOO***MOO***MOO***MOO***MOO***MOO***MOO'')')
 	  WRITE (*,'(14X,12(I2,8X))') (I2,I2=1,ISET1)
@@ -536,12 +537,12 @@ CALL CORCR(Z1,R1,Z2,R2,XOK(IOK),YOK(IOK),ROK(IOK))
 !
 ! вывод на печать массива-описателя области (МОО)
 !
-      DO 120 I2=1,IRL1
-	  IRN=IRL1-I2
+      DO 120 I2=1,IRLIM1
+	  IRN=IRLIM1-I2
       DO 110 I3=1,NB
          PT=ONE
-         IF (IFD(LB+I3+IRN*IZL1) .NE. 10)PT=NULL
-         IF (IFD(LB+I3+IRN*IZL1) .EQ. 10)PT=ASTER
+         IF (IFD(LB+I3+IRN*IZLIM1) .NE. 10)PT=NULL
+         IF (IFD(LB+I3+IRN*IZLIM1) .EQ. 10)PT=ASTER
  110     CAARY(I3)=PT
  120  WRITE (*,'(I4,1HI,120(A1))') IRN, (CAARY(I3), I3=1,NB)
 	  WRITE (*,'(4X,1HL,120(A1))') ('=',I2=1,NB)

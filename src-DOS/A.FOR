@@ -22,17 +22,17 @@
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMMON.FOR' 
       REAL*8  YI(5)
-		Y(1)=U(INZ)
-		Y(2)=V(INZ)
+		Y(1)=UX(INZ)
+		Y(2)=VY(INZ)
 		IF ( NAMCAT .EQ. 'CATOD1' ) THEN
-		   Y(1)=.5*(Y(1)+U(INZ-1))
-		   Y(2)=.5*(Y(2)+V(INZ-1))
+		   Y(1)=.5*(Y(1)+UX(INZ-1))
+		   Y(2)=.5*(Y(2)+VY(INZ-1))
 		END IF
 		Y(3)=0.
 		Y(4)=0.
 		Y(5)=0.
-      YI(1)=U(INZ)- (DR*ZNAK)*DCOS(FO)
-      YI(2)=V(INZ)- (DR*ZNAK)*DSIN(FO)
+      YI(1)=UX(INZ)- (DR*ZNAK)*DCOS(FO)
+      YI(2)=VY(INZ)- (DR*ZNAK)*DSIN(FO)
       YI(3)=(-VO)*DCOS(FO)
       YI(4)=(-VO)*DSIN(FO)  
 !*=== End of SUBROUTINE CATOD1 =========================================*
@@ -54,8 +54,8 @@
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMMON.FOR' 	  
       REAL*8  YI(5)
-      YI(1)=U(INZ) - DR* DCOS (FO)
-      YI(2)=V(INZ) - DR* DSIN (FO)
+      YI(1)=UX(INZ) - DR* DCOS (FO)
+      YI(2)=VY(INZ) - DR* DSIN (FO)
       YI(3)=(-VO)* DCOS (FO)
       YI(4)=(-VO)* DSIN (FO)
 *=== End of subroutine CATOD2 =========================================*
@@ -147,17 +147,17 @@
 
 !**** проверка выхода координат за границы прямоугольной области ***
 ! ***********************************************
-      IF ( DABS(Y2) .GE. YV(IRL1-1).OR. Y1 .LT. XU(0)
-     + .OR. Y1 .GE. XU(IZL1-1)) GOTO 1111
+      IF ( DABS(Y2) .GE. YV(IRLIM1-1).OR. Y1 .LT. XU(0)
+     + .OR. Y1 .GE. XU(IZLIM1-1)) GOTO 1111
 ! ***********************************************
        R=Y2
       IF(Y2 .LT. 0.)R=-R
        IZT=Y1-XU(0)
        IRT=R-YV(0)
-       IND0=IZT+IZL1*IRT+1
-       IND1=IND0+IZL1
+       IND0=IZT+IZLIM1*IRT+1
+       IND1=IND0+IZLIM1
        IND2=IND0+1
-       IND3=IND0+IZL1+1
+       IND3=IND0+IZLIM1+1
       IF (IFD(IND0) .EQ. 10 .AND. IFD(IND1) .EQ. 10 
      +.AND. IFD(IND2) .EQ. 10 .AND. IFD(IND3) .EQ. 10) GOTO 1111
       X1=Y1-XU(0)-IZT
@@ -179,7 +179,7 @@
 	U0=F(IND0)
 	UE=F(IND0+1)
 	UW=F(IND0-1)
-	UN=F(IND0+IZL1)
+	UN=F(IND0+IZLIM1)
  1111 IGMA=0
       RETURN
 !*=== End of subroutine  FORCE =========================================*
@@ -204,8 +204,8 @@
       REAL*8 A(6)
 
 ! ***********************************************
-      IF ( DABS(Y2) .GE. YV(IRL1-1).OR. Y1 .LT. XU(0)
-     + .OR. Y1 .GE. XU(IZL1-1)) GOTO 1111
+      IF ( DABS(Y2) .GE. YV(IRLIM1-1).OR. Y1 .LT. XU(0)
+     + .OR. Y1 .GE. XU(IZLIM1-1)) GOTO 1111
 ! ***********************************************
       R=Y2
       R2=R*R

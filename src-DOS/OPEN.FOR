@@ -33,11 +33,11 @@ C     Main program variables
      +FILE='F5',STATUS='UNKNOWN',ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
       OPEN (UNIT=6,
      +FILE='F6',STATUS='UNKNOWN',ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
-      IRL1=IRL+1
-      IZL1=IZL+1                                         
+      IRLIM1=IRL+1
+      IZLIM1=IZL+1
       WRITE (*,*)'Работает программа OPEN89.FOR'
-      WRITE (*,*)	'IDIM=', IZL1*IRL1
-      IF( IZL1*IRL1 .GT. IDIM ) GO TO 40
+      WRITE (*,*)	'IDIM=', IZLIM1*IRLIM1
+      IF( IZLIM1*IRLIM1 .GT. IDIM ) GO TO 40
        MTM=MT
         NK=NS
       WRITE (*,'(T63,''*******''/T3,''IZL='',I3,T13,
@@ -48,7 +48,7 @@ C     Main program variables
      & 3I10,L10,3E10.3)')
      & NITM,ITMA,ITMI,MTWR,RELE,ABSE,W
       WRITE (*,'(T3,''EPS'',T18,''NT'',T23,''UVOMAX''/
-     & E10.3,I10,E10.3,//,'' GAMAS-ARRAY''/15F8.3/)')
+     & E10.3,I10,E10.3,//,'' GAMAS-ARRAY''/30F8.3/)')
      & EPS, NK,UVOMAX, GAMAS
       DO 13 I=1,IDIM
          F(I)=0.

@@ -13,6 +13,6 @@
       READ    (*,*)    NUMBRC
       WRITE (*,*) 'NUMBRC=',NUMBRC
       REWIND 1
-      READ(1) NITER,(F(J),J=1,IRL1*IZL1),UVOX
+      READ(1) NITER,(F(J),J=1,IRLIM1*IZLIM1),UVOX
       WRITE (*,*)  'NITER=',NITER
       END

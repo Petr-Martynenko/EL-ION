@@ -102,10 +102,10 @@ C!      REAL*8 By2  !поперечная компонента МИ,норм.
       DATA PrintFile /.TRUE./!TRUE - если вывод не на CONSOLE
 
       DO 20 J=1,IZZ
-       Z= U(J)
-       IF(NAMCAT.EQ. 'CATOD1' )Z=0. 5*( Z+U(J-1) )
-       R= V(J)
-       IF(NAMCAT.EQ. 'CATOD1' )R=0.5*(R+V(J-1))
+       Z= UX(J)
+       IF(NAMCAT.EQ. 'CATOD1' )Z=0. 5*( Z+UX(J-1) )
+       R= VY(J)
+       IF(NAMCAT.EQ. 'CATOD1' )R=0.5*(R+VY(J-1))
 *
 *      REAL*8 PCI - out  ! угловая компонента ВМП, норм.
 *      REAL*8 Z   - inp  ! продольная координата точки .сет.ед.
@@ -123,8 +123,8 @@ C! *** PRINT ***     значение ВМП на катоде ***
       END IF
 C! ***********************************************
       DO 30 J= 1, IZZ
- 	     R=V(J)
-	     IF (NAMCAT .EQ. 'CATOD1') R=0.5*(R+V(J-1))
+ 	     R=VY(J)
+	     IF (NAMCAT .EQ. 'CATOD1') R=0.5*(R+VY(J-1))
 	     PCIMG(J)=PCIMG(J)*R 
  30    CONTINUE
       WRITE (9,'('' ЗНАЧЕНИЕ МАГНИТНОГО ПОТОКА НА КАТОДЕ,Wb'')')
@@ -272,10 +272,10 @@ CALL setlinestyle( status)
       NUMB=NUMB+1
 	     REWIND (NK4)
              IF (NUMB.LE.NO.AND.(MOD(J,M4).EQ.0 .OR. J.EQ.1)) THEN
-	     Z=U(J)
-	     IF (NAMCAT .EQ. 'CATOD1') Z=0.5*(Z+U(J-1))
-	     R=V(J)
-	     IF (NAMCAT .EQ. 'CATOD1') R=0.5*(R+V(J-1))
+	     Z=UX(J)
+	     IF (NAMCAT .EQ. 'CATOD1') Z=0.5*(Z+UX(J-1))
+	     R=VY(J)
+	     IF (NAMCAT .EQ. 'CATOD1') R=0.5*(R+VY(J-1))
 	     EQUIPR=R
 	     FF=PCIMG(J)
 C! *** CALCULATES EQUIPOTENTIAL LINE ***

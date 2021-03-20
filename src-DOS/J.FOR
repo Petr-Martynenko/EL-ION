@@ -13,21 +13,21 @@
       REAL*8 UVX(N4)
 !
       DO 1 I=1,IDIM
-       FP(I)=0.
+       FP(I)=0D0
  1    CONTINUE
 !
       IF ( ISTART .EQ. 0 ) THEN
        IF ( NITER .GE. NITM ) REWIND 5
-       IF ( NITER .GE. NITM ) WRITE (5) U(0)*Z0,V(0)*Z0
-	   PERVO=0.
-	   Q1=1.
+       IF ( NITER .GE. NITM ) WRITE (5) UX(0)*Z0,VY(0)*Z0
+	   PERVO=0D0
+	   Q1=1D0
       END IF
       IF ( ISTART .EQ. 1 ) THEN
 	   CALL FLUN56
 	   REWIND 6
-	   READ (6) U(0),V(0)
-	   U(0)=U(0)/Z0
-	   V(0)=V(0)/Z0
+	   READ (6) UX(0),VY(0)
+	   UX(0)=UX(0)/Z0
+	   VY(0)=VY(0)/Z0
 	   Q1=0.
       END IF
 !
@@ -40,35 +40,38 @@
 !
 !	GAMA=корректирующий множитель
 !
-      IF ( NITER .LE. 15)GAMA=GAMAS(NITER)
-      IF ( NITER .GE. 15)GAMA=GAMAS(15)
+      IF ( NITER .LE. 30 ) THEN
+         GAMA=GAMAS(NITER)
+      ELSE
+         GAMA=GAMAS(30)
+      END IF
 !
 !       задание начальных условий
 !
       DO 10 I=1,IZZ
 !
       IF ( ISTART .EQ. 1 ) THEN
-	   READ (6) Y,PCIMG(I),U(I),V(I)
+	   READ (6) Y,PCIMG(I),UX(I),VY(I)
 	   Y(1)=Y(1)/Z0
 	   Y(2)=Y(2)/Z0
-	   U(I)=U(I)/Z0
-	   V(I)=V(I)/Z0
+	   UX(I)=UX(I)/Z0
+	   VY(I)=VY(I)/Z0
 	   PCIMG(I)=PCIMG(I)/Z0
-	   AL0=DSQRT((U(I-1)-U(I))**2+(V(I-1)-V(I))**2)
+	   AL0=DSQRT((UX(I-1)-UX(I))**2+(VY(I-1)-VY(I))**2)
 	   L=1
-	   Q1=0.
+	   Q1=0D0
       END IF
 !
       IF ( ISTART .EQ. 0 ) THEN
       IF ( NAMCAT .EQ. 'CATOD1' ) THEN
-      CALL DISTN( U(I-1), V(I-1), U(I), V(I), Y(1), Y(2), DR)
-		AL0=DSQRT((U(I-1)-U(I))**2+(V(I-1)-V(I))**2)
+      CALL DISTN( UX(I-1), VY(I-1), UX(I), VY(I), Y(1), Y(2), DR)
+		AL0=DSQRT((UX(I-1)-UX(I))**2+(VY(I-1)-VY(I))**2)
       END IF
 !
       IF ( NAMCAT .EQ. 'CATOD2' ) THEN
 	  FO = FHO + (2 * I - 1) * DFO
-	  Y(1)=U(I)-DR * DCOS (FO)
-	  Y(2)=V(I)-DR * DSIN (FO)	  
+	  Y(1)=UX(I)-DR * DCOS (FO)
+	  Y(2)=VY(I)-DR * DSIN (FO)
       END IF
 !
 !	определение потенциала в точке старта
@@ -84,21 +87,21 @@
       UVO=UVOX(I)+GAMA*(UVO-UVOX(I))
       FOX=UVOX(I)*EPS
       FOX=DABS(FOX)
-      IF (DABS(UVO-UVOX(I)) .GE. FOX) Q1=0.
+      IF (DABS(UVO-UVOX(I)) .GE. FOX) Q1=0D0
       IF (UVO .GT. UVOMAX) UVO=UVOMAX
       IF (UVOX(I) .NE. 0.0) UVX(I)=UVO/UVOX(I)
       UVOX(I)=UVO
 !
 !	определение координат в точке инжекции
 !
-		Y(1)=U(I)
-		Y(2)=V(I)
+		Y(1)=UX(I)
+		Y(2)=VY(I)
 		IF ( NAMCAT .EQ. 'CATOD1' ) THEN
-		   Y(1)=.5*(Y(1)+U(I-1))
-		   Y(2)=.5*(Y(2)+V(I-1))
+		   Y(1)=.5*(Y(1)+UX(I-1))
+		   Y(2)=.5*(Y(2)+VY(I-1))
 		END IF
-		Y(3)=0.
-		Y(4)=0.
+		Y(3)=0D0
+		Y(4)=0D0
 		Y(5)=PJA*UVO*AL0*Y(2)
 		PERVO=PERVO+PMA*AL1*Y(5)
 		L=0
@@ -106,10 +109,10 @@
       IGMA=1
       CALL INTEGR(I,L)
  9    FORMAT (' PER=',F6.4,'(MICROAMPS/V**1.5) FG=',I7,' (V)  I=',
-     & G8.3,'(AMPS) NITER=',I4)
+     & G8.3,'(AMPS) NITER=',I4,' G=',F4.3)
  10   CONTINUE
       IF ( ISTART .EQ. 0 ) THEN
-        WRITE(*,9)  PERVO,INT4(FG),PERVO*FG**1.5*1.E-6,NITER
+        WRITE(*,9)  PERVO,INT4(FG),PERVO*FG**1.5*1.E-6,NITER,GAMA
            END IF
       WRITE(*,'(T3,''START POINT POTENTIALS  NORMALIZED FOR FG='',
      & I7,'' (V)'')')INT4(FG)
@@ -128,7 +131,7 @@
 !
       UVMA=1.D-7
       DO 20 I=1,IZZ
-      UVX(I)=0.0
+      UVX(I)=0D0
       IF (POTX(I) .GE. 0.0)
      & UVX(I)=UVOX(I)*PJA !*PMA*FG**1.5*1.E-10/Z0**2
       UVMA=AMAX1(UVMA,UVOX(I))
@@ -275,10 +278,10 @@ C *************
 ! *************
 !    заполнение матрицы обьемного заряда	  
 ! ***********************************************
-       IND0=IZT+IZL1*IRT+1
-       IND1=IND0+IZL1
+       IND0=IZT+IZLIM1*IRT+1
+       IND1=IND0+IZLIM1
        IND2=IND0+1
-       IND3=IND0+IZL1+1
+       IND3=IND0+IZLIM1+1
        FP(IND0)=FP(IND0)+YRT*(1.-Z1)*(1.-R1)
        FP(IND1)=FP(IND1)+YRT*(1.-Z1)*    R1
        FP(IND2)=FP(IND2)+YRT*    Z1 *(1.-R1)
@@ -335,7 +338,7 @@ C *************
 ! *************
 !   вывод значений координат в промежуточном сечении	  
 ! ***********************************************
-        WRITE(5)ZZ*Z0,RZ*Z0,VZ,VR,Y(5),PCIMG(INZ)*Z0,U(INZ)*Z0,V(INZ)*Z0
+      WRITE(5)ZZ*Z0,RZ*Z0,VZ,VR,Y(5),PCIMG(INZ)*Z0,UX(INZ)*Z0,VY(INZ)*Z0
       IF ( MAG )
      &	 PRINT 4, INZ, ZZ, RZ, VZ,VR, VO, RTE,  SQRT(VS2),Y(5)*DT
       IF (.NOT. MAG )

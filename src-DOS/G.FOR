@@ -183,14 +183,14 @@
       IF ( ISTART .EQ. 1 ) THEN
 	   CALL FLUN56
 	   REWIND 6
-	   READ (6) U(0),V(0)
-	   U(0)=U(0)/Z0
-	   V(0)=V(0)/Z0
+	   READ (6) UX(0),VY(0)
+	   UX(0)=UX(0)/Z0
+	   VY(0)=VY(0)/Z0
       END IF
 !
       IF ( ISTART .EQ. 0 ) THEN
        IF ( NITER .GE. NITM ) REWIND 5
-       IF ( NITER .GE. NITM ) WRITE (5) U(0)*Z0,V(0)*Z0
+       IF ( NITER .GE. NITM ) WRITE (5) UX(0)*Z0,VY(0)*Z0
       END IF
       IF ( NITER .EQ. NITM ) PRINT '(81(1H*))'
       IF (.NOT. MAG ) WRITE(9,'(T3,''N   Z-KOOP.	R-KOOP.'',
@@ -204,26 +204,26 @@
       DO 10 I=1,IZZ
 !
       IF ( ISTART .EQ. 1 ) THEN
-	   READ (6) Y,PCIMG(I),U(I),V(I)
+	   READ (6) Y,PCIMG(I),UX(I),VY(I)
 	   Y(1)=Y(1)/Z0
 	   Y(2)=Y(2)/Z0
-	   U(I)=U(I)/Z0
-	   V(I)=V(I)/Z0
+	   UX(I)=UX(I)/Z0
+	   VY(I)=VY(I)/Z0
 	   PCIMG(I)=PCIMG(I)/Z0
-	   AL0=DSQRT((U(I-1)-U(I))**2+(V(I-1)-V(I))**2)
+	   AL0=DSQRT((UX(I-1)-UX(I))**2+(VY(I-1)-VY(I))**2)
 	   L=1
       END IF
 !
       IF ( ISTART .EQ. 0 ) THEN
       IF ( NAMCAT .EQ. 'CATOD1' ) THEN
-      CALL DISTN( U(I-1), V(I-1), U(I), V(I), Y(1), Y(2), DR)
-		AL0=DSQRT((U(I-1)-U(I))**2+(V(I-1)-V(I))**2)
+      CALL DISTN( UX(I-1), VY(I-1), UX(I), VY(I), Y(1), Y(2), DR)
+		AL0=DSQRT((UX(I-1)-UX(I))**2+(VY(I-1)-VY(I))**2)
       END IF
 !
       IF ( NAMCAT .EQ. 'CATOD2' ) THEN
 	  FO = FHO + (2 * I - 1) * DFO
-	  Y(1)=U(I)-DR * DCOS (FO)
-	  Y(2)=V(I)-DR * DSIN (FO)	  
+	  Y(1)=UX(I)-DR * DCOS (FO)
+	  Y(2)=VY(I)-DR * DSIN (FO)
       END IF
 !
 !     определение потенциала в точке старта
@@ -236,7 +236,7 @@
 !
       UVO=VO*VO*VO
       UVXX(I)=UVO
-	PERV=PERV+PMA*AL1*PJA*UVO*AL0*V(I)
+	PERV=PERV+PMA*AL1*PJA*UVO*AL0*VY(I)
 		L=0
       END IF
       IF (MOD(I,M4).EQ.0 .OR. I.EQ.1) THEN

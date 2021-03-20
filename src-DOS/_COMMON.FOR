@@ -2,7 +2,6 @@
 !$_ECOM
       INTEGER*4 EQST ! количество делений начального шага эквипотенциали
       INTEGER*4 EQLN ! макс.количество итераций уточнения координат
-      REAL FF  
       COMMON/ECOM/FF,DELT,EQUIPR,EQLN,EQST
 COM01............./COM01/IPO(NS)
       INTEGER      IPO
@@ -28,12 +27,12 @@ COM07............./COM07/F(IDIM)
 COM08............./COM08/FP(IDIM)
       REAL*8         FP
       COMMON/COM08/FP(IDIM)
-COM09............./COM09/IZL1,IRL1,NK,MTM
-      INTEGER      IZL1
-      INTEGER      IRL1
+COM09............./COM09/IZLIM1,IRLIM1,NK,MTM
+      INTEGER      IZLIM1
+      INTEGER      IRLIM1
       INTEGER      NK
       INTEGER      MTM
-      COMMON/COM09/IZL1,IRL1,NK,MTM
+      COMMON/COM09/IZLIM1,IRLIM1,NK,MTM
 COM10............./COM10/XU(0:IZL)
       REAL*8         XU     !продольная координата сеточных узлов
       COMMON/COM10/XU(0:IZL)
@@ -69,12 +68,12 @@ COM14............./COM14/MI, M4, NAME, S, C(NO)
 COM15............./COM15/IGMA                 
       INTEGER      IGMA
       COMMON/COM15/IGMA
-COM16............./COM16/NITER, EPS, UVOMAX, GAMAS(15)
+COM16............./COM16/NITER, EPS, UVOMAX, GAMAS(30)
       INTEGER      NITER   !номер итерации
       REAL*8       EPS     !точность расчета
       REAL*8       UVOMAX  !MAX эмитирующая способность
       REAL*8       GAMAS   !массив корректирующих множителей
-      COMMON/COM16/NITER, EPS, UVOMAX, GAMAS(15)
+      COMMON/COM16/NITER, EPS, UVOMAX, GAMAS(30)
 COM17............./COM17/PX(MT)                 
       REAL         PX	   !массив продольных координата
       COMMON/COM17/PX(MT)
@@ -97,14 +96,14 @@ CC    NUMB=0--расчет вакуумного потенциала
       INTEGER      NUMB	   !номер поверхности инжекции трубок тока
       REAL*8       POT
       COMMON/COM19/NITM,ITMA,ITMI,MTWR,RELE,ABSE,W,FGUN,NUMB,POT(NJMAX)
-COM20............./COM20/U(0:N4),V(0:N4),DR,BETA1,BETA2,IZZ
-      REAL*8       U     !продольная координата точки эмиссии
-      REAL*8       V     !поперечная координата точки эмиссии
+COM20............./UVW/UX(0:N4),VY(0:N4),DR,BETA1,BETA2,IZZ
+      REAL*8       UX     !продольная координата точки эмиссии
+      REAL*8       VY     !поперечная координата точки эмиссии
       REAL*8       DR
       REAL*8       BETA1
       REAL*8       BETA2
-      INTEGER      IZZ   !к-во разбиений пов-сти эмиссии
-      COMMON/COM20/U(0:N4),V(0:N4),DR,BETA1,BETA2,IZZ
+      INTEGER      IZZ !к-во разбиений пов-сти эмиссии
+      COMMON/COM20/UX(0:N4),VY(0:N4),DR,BETA1,BETA2,IZZ
 COM21............./COM21/AKAT(3),BKAT(3),DKAT(3),TKAT(3),WKAT(3),ZKAT(3)
       REAL*8         AKAT !внутрений радиус катушки,м  
       REAL*8         BKAT !внешний радиус катушки,м 
@@ -163,3 +162,4 @@ CC    MAG=.FALSE.--задача без магнитного поля
       INTEGER      MAGSEG
       INTEGER      MAGORD
       COMMON/COM28/MAG, MAGSEG, MAGORD
+

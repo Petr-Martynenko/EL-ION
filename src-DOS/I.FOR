@@ -10,75 +10,49 @@
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMMON.FOR'
 
-      LOGICAL	Fexist
       CHARACTER*128 fname/'mtra.TXT'C/
-      LOGICAL	FPARAM
+      LOGICAL	Fexist,	FPARAM
       DATA    NK2 /2/ !канал записи траекторий трубок тока
 !---
-      NVAR = 0
-      Fexist=.TRUE.
-      DO WHILE (Fexist)
-           NVAR = NVAR + 1
-         IF (FPARAM)  THEN 
-	   fname='CHARGE'//CHAR(64+NVAR)//'.TXT'
-         ELSE
-	   fname='POTENT'//CHAR(64+NVAR)//'.TXT'
-         ENDIF
+	   OPEN (UNIT=14, ACCESS='APPEND', FILE = fname)
 !---	   INQUIRE about file's existence:
 	   INQUIRE (FILE = fname, EXIST = Fexist)
-	   IF(.NOT.Fexist)OPEN (UNIT=14, FILE = fname)
-      END DO  
+	   IF (.NOT.Fexist) return
 !--- вывод массива объемного заряда	  CHARGE?.TXT
-      IF (FPARAM)  THEN 
-	WRITE (14,'(''EL&ION VISUALISATION CHRG OUTPUT'')')  
+      IF(FPARAM)  THEN
+	WRITE (14,'(''EL&ION VISUALISATION CHRG OUTPUT'')')
+      ELSE
+	WRITE (14,'(''EL&ION VISUALISATION POTENT OUTPUT'')')
+      ENDIF
 	WRITE (14,'(''TITLE=EL&ION VISUALISATION №'',I3.3)') NITER 
 	WRITE (14,'(''XLIM=0,150'')')
-	WRITE (14,'(''YLIM=-75,75'')')
+	WRITE (14,'(''YLIM=0,105'')')
 	WRITE (14,'(''XLABEL=AXIS-Z'')')
 	WRITE (14,'(''YLABEL=AXIS-R'')')
+	WRITE (14,'(''CONTOUR-XYZ'')')
 	WRITE (14,'(''MASK=0'')')
-!
-! Построение поля объемного заряда
-!
-	DO IZT = 0, IZL1-1
+!--- вывод массива
+      DO IZT = 0, IZLIM1-1
            Z2=XU(IZT)
-           DO IRT = -(IRL1-1), -1  !LOOP_BOT: 
+           DO IRT = -(IRLIM1-1), -1  !LOOP_BOT: 
            R2=-YV(-IRT)
-	     FF = FP(-IRT*IZL1+IZT+1)
-	     WRITE (14,*) HFIX(Z2),HFIX(R2),FF  
+      IF (FPARAM)  THEN 
+	     FF = FP(-IRT*IZLIM1+IZT+1)
+      ELSE
+	     FF = F(-IRT*IZLIM1+IZT+1)
+      ENDIF
+	     WRITE (14,*) HFIX(Z2),HFIX(R2),REAL(FF)  
 		 END DO  !LOOP_BOT 
-           DO IRT = 0, (IRL1-1)  !LOOP_TOP: 
+           DO IRT = 0, (IRLIM1-1)  !LOOP_TOP: 
            R2=YV(IRT)
-	     FF = FP(IRT*IZL1+IZT+1) ! вывод потенциала
-	     WRITE (14,*) HFIX(Z2),HFIX(R2),FF  
+      IF (FPARAM)  THEN 
+	     FF = FP(IRT*IZLIM1+IZT+1) ! вывод потенциала
+      ELSE
+	     FF = F(IRT*IZLIM1+IZT+1)! вывод объемного заряда
+      ENDIF
+	     WRITE (14,*) HFIX(Z2),HFIX(R2),REAL(FF)  
 		 END DO  !LOOP_TOP 
 	END DO 
-!---  вывод потенциала 	          POTENT?.TXT
-      ELSE
-	WRITE (14,'(''EL&ION VISUALISATION POTENTIAL OUTPUT'')')
-	WRITE (14,'(''TITLE=EL&ION VISUALISATION №'',I3.3)') NITER 
-	WRITE (14,'(''XLIM=0,150'')')
-	WRITE (14,'(''YLIM=-75,75'')')
-	WRITE (14,'(''XLABEL=AXIS-Z'')')
-	WRITE (14,'(''YLABEL=AXIS-R'')')
-	WRITE (14,'(''MASK=0'')')
-!
-! Построение эквипотенциалей
-!
-	DO IZT = 0, IZL1-1
-           Z2=XU(IZT)
-           DO IRT = -(IRL1-1), -1  !LOOP_BOT: 
-             R2=-YV(-IRT)
-	       FF = F(-IRT*IZL1+IZT+1)
-	         WRITE (14,*) HFIX(Z2),HFIX(R2),FF  
-		   END DO  !LOOP_BOT 
-           DO IRT = 0, (IRL1-1)  !LOOP_TOP: 
-             R2=YV(IRT)
-	       FF = F(IRT*IZL1+IZT+1) ! вывод потенциала
-	         WRITE (14,*) HFIX(Z2),HFIX(R2),FF  
-		   END DO  !LOOP_TOP 
-	END DO 
-      ENDIF
 !
 ! Построение граничных точек контура ОБЛАСТИ
 !
@@ -88,7 +62,7 @@
 	  WRITE (14,*) IZ(K),IR(K),REAL(DELR(K)),REAL(DELZ(K))     !,IPO(I)
 		 END DO 
 
-      IF (MAG)  THEN 
+      IF (FPARAM)  THEN 
 !
 ! Построение эквипотенциалей
 !
@@ -100,19 +74,17 @@
 	     CALL EQUIP
 	     IF(MTM.GT.1)   THEN
 !
-! Если при считывании эквипотенциалей, то нет записи
+! Если при считывании эквипотенциалей ошибка, то нет записи
 !
 !	WRITE (14,'(''EQUIPOTENTIAL LINE №'',I3.3)') K 
 	WRITE (14,'(''LINE-XY'')')
-      IF (K .GE. 1)  THEN
 	WRITE (14,'(''COLOR=BLACK'')')
-	WRITE (14,'(''LINEWIDTH=0.5'')')
+	WRITE (14,'(''LINEWIDTH=0.6'')')
 	WRITE (14,'(''ALPHA=0.5'')')
-      ENDIF
 	       DO J=1,MTM
 	         WRITE (14,'(2F8.3)') REAL(PX(J)),REAL(PY(J))
 		   END DO 
-		     ENDIF
+      ENDIF
  55   CONTINUE
       ENDIF
 !
@@ -125,9 +97,9 @@
 !
 ! Если при считывании массива траекторий частиц ошибка, то нет записи
 !
-!	WRITE (14,'(''TRаекторий LINE №'',I3.3)') K 
+	WRITE (14,'(''Output trajectories №'',I3.3)') K  
 	WRITE (14,'(''LINE-XY'')')
-	WRITE (14,'(''COLOR=BLACK'')')
+	WRITE (14,'(''COLOR=WHITE'')')
 	WRITE (14,'(''GAMA=  .05'')')
 	WRITE (14,'(''LINEWIDTH=0.5'')')
 	WRITE (14,'(''ALPHA=0.5'')')
@@ -142,17 +114,20 @@
       END  
 !----------------------------------------
       SUBROUTINE DSPROC( IEQQ, EQB, RHO, ZETA, C1, C2, *)
-C *** INCREMENTS EQUIPOTENTIAL LINE ***
-*  INTEGER IEQQ - inp  ! макс.кол-во итераций уточнения координат  
-*  LOGICAL EQB  - inp  !
-*  REAL*8 ZETA  - inp  ! продольная координата , норм.
+!*** INCREMENTS EQUIPOTENTIAL LINE ***
+!*  INTEGER IEQQ - inp  ! макс.кол-во итераций уточнения координат  
+!*  LOGICAL EQB  - inp  !
+!*  REAL*8 RHO   - inp  ! поперечная координата точки .сет.ед.
+!*  REAL*8 ZETA  - inp  ! продольная координата точки .сет.ед.
+!*  REAL*8 C1    - out  ! продольная компонент ..,норм.
+!*  REAL*8 C2    - out  ! поперечная компонент .....,норм.
 !----------------------------------------
       IMPLICIT REAL*8 (A-H,O-Z)
       INCLUDE '_PARAM.FOR'
       INCLUDE '_COMMON.FOR'
 ***********************************************
-CC    EQB=.TRUE.--определяются приращения координат эквипотенциали	  
-CC    EQB=.FALSE.--определяется только приращение продольной координаты	  
+!    EQB=.TRUE. --определяются приращения координат эквипотенциали	  
+!    EQB=.FALSE.--определяется только приращение продольной координаты	  
       INTEGER IEQQ
       LOGICAL EQB
 	  
@@ -218,9 +193,9 @@ C *** SS DETERMINES SIGN (I.E., DIRECTION) OF EQUIPOTENTIAL LINE ***
 C *** обнуление координаты Z ***
         Z=0
 C *** проверка значений координаты Z ***
- 20    IF (Z .GE. IZL1-1) GOTO 50
-       IF (R .GE. IRL1-1) GOTO 25
-       DS = F(R*IZL1+Z+1)-FF
+ 20    IF (Z .GE. IZLIM1-1) GOTO 50
+       IF (R .GE. IRLIM1-1) GOTO 25
+       DS = F(R*IZLIM1+Z+1)-FF
        DSSI2 = DSIGN (1D0,DS)
 	 IF (DSSI1+DSSI2 .EQ. 0.) GOTO 30
 C *** перебор значений координатных узлов оси Z ***
@@ -318,22 +293,22 @@ C     Main program variables
 	  IF (RDZP .EQ. 'RED') THEN
       IZLS=1
       DO 10 J=1,40,2
-      IND1=J*IZL1+IZLS
-      F(IND1)=0.5*(F(IND1+IZL1)+F(IND1-IZL1))
+      IND1=J*IZLIM1+IZLS
+      F(IND1)=0.5*(F(I*IZLIM1)+F(IND1-IZLIM1))
  10   CONTINUE
  1111	FORMAT(F6.3)
  2222	FORMAT(11E11.4)
 	  WRITE (*,1111) Z0*(IZLS-1+XU(0))
-	  WRITE (*,2222) (F(I*IZL1+IZLS)*FG,I=0,20)
+	  WRITE (*,2222) (F(I*IZLIM1+IZLS)*FG,I=0,20)
 	  END IF
 
       IF (RDZP .EQ. 'ZAP') THEN
 	IZLS=ZSCHIF+1
-	IZLF=IZL1
-	WRITE (4) (F(I*IZL1+IZLS),I=0,20)
+	IZLF=IZLIM1
+	WRITE (4) (F(I*IZLIM1+IZLS),I=0,20)
 	WRITE (*,1111) Z0*(IZLS-1+XU(0))
-	WRITE (*,2222) (F(I*IZL1+IZLS)*FG,I=0,20)
+	WRITE (*,2222) (F(I*IZLIM1+IZLS)*FG,I=0,20)
 	WRITE (*,1111) Z0*(IZLF-1+XU(0))
-	WRITE (*,2222) (F(I*IZL1+IZLF)*FG,I=0,20)
+	WRITE (*,2222) (F(I*IZLIM1+IZLF)*FG,I=0,20)
       END IF
       END !REDZAP

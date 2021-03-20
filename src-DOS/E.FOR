@@ -12,10 +12,10 @@
       INCLUDE '_COMMON.FOR'
 
 
-      REAL*8 X1,Y1,X2,Y2,X
+      REAL*8 X1,Y1,X2,Y2,Z1,R1,Z2,R2,X
       REAL*8 XMAX,YMAX,XMIN,YMIN,XL,YL
-      INTEGER*2      i, status, ncolor
-      INTEGER*4      in4, oldcolor
+      INTEGER*2      i, status
+      INTEGER*4      in4,oldcolor,ncolor
       RECORD /wxycoord/ wxy
       RECORD / videoconfig / vc
 
@@ -97,15 +97,23 @@ CALL setlinestyle( status)
 !	    or 0 if not.
 	   IF(status.EQ.0)STOP'Error:the ellipse is drawn successfully'  
       ELSE
-! Построение контура ОБЛАСТИ
+! Построение линий контура ОБЛАСТИ
         IF (N .NE. 0) THEN 
          IO=IO+1
-         X1=XOK(IO)+ROK(IO)
-         Y1=YOK(IO)+ROK(IO)
-         X2=XOK(IO)-ROK(IO)
-         Y2=YOK(IO)-ROK(IO)
-        IF(N .EQ.-1)status = ARC_W( X1, Y1, X2, Y2, Z2, R2, Z1, R1)
-        IF(N .EQ. 1)status = ARC_W( X1, Y1, X2, Y2, Z1, R1, Z2, R2 )
+!
+! определение параметров окружности (X0,Y0, RCO)
+!
+         IF(N.EQ. 1)CALL CORCR(Z1, R1, Z2, R2,X0,Y0, ROK(IO))
+         IF(N.EQ.-1)CALL CORCR(Z1, R1, Z2, R2,X0,Y0,-ROK(IO))
+         X1=X0+ROK(IO)     !XOK(IO)+ROK(IO)
+         Y1=Y0+ROK(IO)     !YOK(IO)+ROK(IO)
+         X2=X0-ROK(IO)     !XOK(IO)-ROK(IO)
+         Y2=Y0-ROK(IO)     !YOK(IO)-ROK(IO)
+         IF(N.EQ.-1)status = ARC_W( X1, Y1, X2, Y2, Z2, R2, Z1, R1)
+         IF(N.EQ. 1)status = ARC_W( X1, Y1, X2, Y2, Z1, R1, Z2, R2)
+!	    Returns:  a nonzero value if the arc is drawn successfully,
+!	    or 0 if not.
+	 IF(status.EQ.0)PAUSE 'Error:the arc is not drawn successfully'
          CALL MOVETO_W( Z2, R2, wxy )
         ELSE
          status = LINETO_W( Z2, R2)
@@ -120,8 +128,8 @@ CALL setlinestyle( status)
          R1=FLOAT(i)
          DO j = 0, IZL
 	     Z1=FLOAT(j)
-	     IF (IFD(j+1+i*IZL1) .EQ. 10)CYCLE
-	     in4 = F(j+1+i*IZL1) * vc.numcolors
+	     IF (IFD(j+1+i*IZLIM1) .EQ. 10)CYCLE
+	     in4 = F(j+1+i*IZLIM1) * vc.numcolors
 	     ncolor = MOD( in4, vc.numcolors )
 	     status = SETCOLOR( ncolor )
 	     X1=Z1+0.5
@@ -133,7 +141,7 @@ CALL setlinestyle( status)
       END DO
 !----------------------------------------------
       REWIND (NK1)
-!      IDIM1=IRL1*IZL1
+!      IDIM1=IRLIM1*IZLIM1
 !к-во узлов сетки потенциала и матрицы плотности
 !      READ (NK1) NITER,(F(I),I=1,IDIM1)
 !
@@ -182,6 +190,6 @@ CALL setlinestyle( status)
 ! Построение распределения потенциала на оси
 !
       WRITE (9,*)	'AXES POTENTIAL DISTRIBUTION'
-      WRITE (9,'(10G12.3)')(XU(I-1),F(I),I=1,IZL1)
+      WRITE (9,'(10G12.3)')(XU(I-1),F(I),I=1,IZLIM1)
       RETURN
       END !SUBROUTINE GRAFO

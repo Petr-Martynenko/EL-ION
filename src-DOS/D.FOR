@@ -5,7 +5,7 @@
       SUBROUTINE FPOTE
 !----------------------------------------
       IMPLICIT REAL*8 (A-H,O-Z)
-      INCLUDE '_PARAM.FOR'
+      INCLUDE '_PARAM.FOR'  
       INCLUDE '_COMMON.FOR'
 
 !C     Main program variables
@@ -17,14 +17,17 @@
       LOGICAL BL
       DATA NK1 /1/ !канал записи потенциала
       DATA NK3 /3/ !канал записи обьемного заряда
+!к-во узлов сетки потенциала и матрицы плотности
+      IDIM1=IRLIM1*IZLIM1
 !CC
 !CC    печать основных параметров
 !CC
       IF(NITER .EQ. 0) THEN 
       WRITE (*,'(T6,''Potential of contour electrodes='')')
-      WRITE(*,'(10(I6,F8.2))')(I,POT(I),I=1,NJMAX)
+      WRITE(*,'(8(I6,F8.2))')(I,POT(I),I=1,NJMAX)
+      WRITE (*,*)'количество узлов двумерной сетки IDIM=', IDIM1
+      WRITE (*,*)'количество граничных точек  NK=', NK
       ENDIF
-      IDIM1=IRL1*IZL1 !к-во узлов сетки потенциала и матрицы плотности
       IF( IDIM1 .GT. IDIM ) GO TO 900
 !----------------------------------------------
       IF (ZNAK .LT. 0.) WRITE (NK3)(FP(I),I=1,IDIM1)
@@ -49,8 +52,8 @@
 !
 !	GAMA=корректирующий множитель
 !
-      IF ( NITER .LE. 15)GAMA=GAMAS(NITER)
-      IF ( NITER .GE. 15)GAMA=GAMAS(15)
+      IF ( NITER .LE. 30)GAMA=GAMAS(NITER)
+      IF ( NITER .GE. 30)GAMA=GAMAS(30)
        WRITE
      + (*,'(T3,''NITER='',I4,T15,''ITER='',I4,T25,''GAMA='',F6.3,
      + T42,''TIME='',F7.2)') NITER,ITER, GAMA,PP-AP
@@ -60,12 +63,12 @@
       UVX(I)=1.D+10
       PTX(I)=1.D+10
       IF ( NAMCAT .EQ. 'CATOD1' )
-     + CALL DISTN( U(I-1), V(I-1), U(I), V(I), Y(1), Y(2), DR)
+     + CALL DISTN( UX(I-1), VY(I-1), UX(I), VY(I), Y(1), Y(2), DR)
 !
       IF ( NAMCAT .EQ. 'CATOD2' ) THEN
 	  FO = FHO + (2 * I - 1) * DFO
-	  Y(1)=U(I)-DR* COS (FO)
-	  Y(2)=V(I)-DR* SIN (FO)
+	  Y(1)=UX(I)-DR* COS (FO)
+	  Y(2)=VY(I)-DR* SIN (FO)
       END IF
 !
 !	определение потенциала в точке старта
@@ -93,9 +96,9 @@
 
       IF (ZNAK .GT. 0.) THEN 
 !----------------------------------------------
-      DO I=1,IDIM1
+         DO I=1,IDIM1
          FP(I)=0.
-      END DO
+         END DO
       ELSE
 !----------------------------------------------
           REWIND NK3
@@ -109,34 +112,35 @@
 !----------------------------------------
       SUBROUTINE POISON
 !----------------------------------------
-CC
-CC     расчет сетки потенциала методом верхней релаксации
-CC
+!
+!     расчет сетки потенциала методом верхней релаксации
+!
       IMPLICIT REAL*8 (A-H,O-Z)
-      INCLUDE '_PARAM.FOR'
+      INCLUDE '_PARAM.FOR'  
       INCLUDE '_COMMON.FOR'
 
-C     Main program variables
+!     Main program variables
 
       REAL*8 AP
+      REAL*8 PP
       DATA EPS /1.D-5/
       CALL TIMER (AP) 
 !**************************************************
-CC     задание потенциала в нерегулярных узлах
+!     задание потенциала в нерегулярных узлах
        DO 205 I=2,NK
        N  = IPO(I)
        DER = DELR(I)
        DEZ = DELZ(I)
        IRT=   IR(I)
        IZT=   IZ(I)
-       IND=IRT*IZL1+IZT+1
+       IND=IRT*IZLIM1+IZT+1
         Q=FP(IND)
         U1=F(IND-1)
-        U2=F(IND-IZL1)
+        U2=F(IND-IZLIM1)  
         U3=F(IND+1)
  
-       IF(IRT .EQ. IRL1-1) U4=F(IND)
-       IF(IRT .NE. IRL1-1) U4=F(IND+IZL1)
+       IF(IRT .EQ. IRLIM1-1) U4=F(IND)
+       IF(IRT .NE. IRLIM1-1) U4=F(IND+IZLIM1)
 
        IF(N .LE. 0) THEN
         IF( ABS(DER).LT. EPS .AND. ABS(DEZ).LT. EPS) GOTO 80
@@ -149,7 +153,7 @@ CC     задание потенциала в нерегулярных узлах
         U2=POT(-N)
         IF(DER.LT.0.)GO TO 60
         AL02=-1.
-        U2=F(IND-IZL1)
+        U2=F(IND-IZLIM1)
         AL04=DER
         U4=POT(-N)
  60   IF(  ABS(DEZ) .GT. 1.  )GO TO 70
@@ -215,25 +219,26 @@ CC     задание потенциала в нерегулярных узлах
        END IF
  200	F(IND)=U0
  205	CONTINUE	
-CC
-CC     вычисление потенциала в регулярных узлах
-CC     использовать линейную норму вектора погрешности
-CC
+!
+!     вычисление потенциала в регулярных узлах
+!     использовать линейную норму вектора погрешности
+!
       XPR=0.
       DO 220 IBEG=1,2
-      DO 210 I=IBEG,IRL1*IZL1,2
+      DO 210 I=IBEG,IRLIM1*IZLIM1,2
       IF (IFD(I) .NE. 0) GOTO 210
-      J=(I-1)/IZL1
+      J=(I-1)/IZLIM1
       SUM=F(I)
-      F(I) = .25*(F(I+1)+F(I-1)+(1. + .5/J)*F(I+IZL1)+
-     +(1.-.5/J)*F(I-IZL1)-FP(I))
+      F(I) = .25*(F(I+1)+F(I-1)+(1. + .5/J)*F(I+IZLIM1)+
+     +(1.-.5/J)*F(I-IZLIM1)-FP(I))
       DELF=F(I)-SUM
       XPR=DMAX1 (XPR, DABS (DELF) )
       F(I)=DELF*W+SUM
  210  CONTINUE
  220  CONTINUE
       IF (XPR .GE. RELE) MTWR=.FALSE.
-
+      CALL TIMER (PP)
+! *** *** END POISON
       RETURN
       END !SUBROUTINE POISON
 !----------------------------------------
